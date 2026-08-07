@@ -31,5 +31,5 @@ export function ScrollEffects() {
     return () => { observer.disconnect(); window.removeEventListener("scroll", onScroll); window.removeEventListener("pointermove", onPointerMove); if (frame) cancelAnimationFrame(frame); };
   }, []);
 
-  return <div className="cursor-orbit" ref={cursorRef} aria-hidden="true"><span /></div>;
+  return <div className="cursor-cross" ref={cursorRef} aria-hidden="true"><i /><b /><em>P/</em></div>;
 }
