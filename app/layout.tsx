@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist } from "next/font/google";
+import { ScrollEffects } from "./components/ScrollEffects";
 import "./globals.css";
 
 const geist = Geist({
@@ -20,5 +21,5 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <html lang="de"><body className={geist.variable}>{children}</body></html>;
+  return <html lang="de"><body className={geist.variable}><ScrollEffects />{children}</body></html>;
 }
