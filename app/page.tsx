@@ -1,5 +1,11 @@
 import { SiteFooter, SiteHeader } from "./components/SiteShell";
 
+const projects = [
+  ["01", "Gambino36", "Cover Art · Markenwelt", "/references/cityofgod.webp"],
+  ["02", "Zizou Fashion", "Fashion · Creative Direction", "/references/zizou-01.webp"],
+  ["03", "Hemso069", "Visual Identity · Music", "/references/hemso-01.webp"],
+];
+
 const clients = [
   ["PIECHA", "Handwerksbetrieb", "/clients/piechalogo.png"],
   ["ZIZOU", "Fashion", "/clients/zizou.gif"],
@@ -9,32 +15,29 @@ const clients = [
 ];
 
 export default function Home() {
-  return <main>
-    <section className="hero" id="top">
-      <div className="grain" aria-hidden="true" />
-      <div className="hero-mark" aria-hidden="true"><span>P</span><i /></div>
+  return <main className="home-v2">
+    <section className="edition-hero" id="top">
       <SiteHeader />
-      <div className="hero-content container">
-        <p className="eyebrow reveal">Strategie · Digital · Objektservice</p>
-        <h1 className="hero-title reveal delay-one">Wirkung beginnt<br />mit <em>klarer</em> Richtung.</h1>
-        <div className="hero-bottom reveal delay-two"><p>Wir machen Unternehmen sichtbar, strukturierter und bereit für ihren nächsten Schritt.</p><a className="round-link" href="/leistungen" aria-label="Leistungen entdecken"><span>Entdecken</span><b>↓</b></a></div>
+      <div className="container edition-grid">
+        <p className="edition-number">01 / 05</p>
+        <h1>Keine<br /><em>Fassade.</em><br />Eine Haltung.</h1>
+        <figure className="edition-cover" data-parallax="-.05"><img src="/references/cityofgod.webp" alt="Cover-Art-Referenz von Gambino36" /><figcaption>Gambino36 / City of God<br />Cover Art, 2024</figcaption></figure>
+        <div className="edition-copy"><p>Wir arbeiten an dem, was Unternehmen unverwechselbar macht: Position, Ausdruck und der Mut, nicht wie alle anderen zu wirken.</p><a href="/kontakt">Projekt starten <span>↗</span></a></div>
       </div>
-      <div className="hero-footer container reveal delay-three"><p>Management, Marketing &amp; digitale Erlebnisse.</p><p>Seit 2018 · Bergkamen / überall</p></div>
+      <div className="edition-scroll container"><span>Scroll to read</span><i aria-hidden="true" /><span>BERGKAMEN / DE</span></div>
     </section>
 
-    <section className="kinetic-strip" aria-label="Pracht Performance Schwerpunkte"><div className="kinetic-track"><span>Strategie</span><b>✦</b><span>Marken</span><b>✦</b><span>Momentum</span><b>✦</b><span>Digital</span><b>✦</b><span>Strategie</span><b>✦</b><span>Marken</span><b>✦</b><span>Momentum</span><b>✦</b><span>Digital</span><b>✦</b></div></section>
+    <section className="home-intro"><div className="container"><p className="section-kicker">Pracht Performance / Independent since 2018</p><div className="home-intro-copy"><h2>Wir bauen keine<br />Auftritte. Wir bauen<br /><em>Wiedererkennung.</em></h2><p>Strategie, Gestaltung und operative Umsetzung gehören für uns zusammen. Nur so entsteht eine Marke, die nicht beim ersten Kontakt endet.</p></div></div></section>
 
-    <section className="intro section container"><p className="section-kicker">Pracht Performance</p><div className="intro-grid"><h2>Weniger Lärm.<br /><em>Mehr Relevanz.</em></h2><div><p className="intro-copy">Gute Arbeit muss nicht laut sein. Sie muss die richtigen Menschen erreichen, Prozesse vereinfachen und Marken ein Gesicht geben, das man nicht vergisst.</p><a className="text-link" href="/ansatz">So arbeiten wir <span>↗</span></a></div></div></section>
+    <section className="project-ledger"><div className="container"><div className="ledger-head"><p className="section-kicker">Selected work</p><p>3 von vielen unterschiedlichen Wegen, Sichtbarkeit ernst zu nehmen.</p></div><div className="project-list">{projects.map(([number, title, category, image]) => <article className="project-row" key={title}><div className="project-count">{number}</div><div className="project-image" data-parallax="-.04"><img src={image} alt={`${title} Projektarbeit`} /></div><div className="project-title"><h2>{title}</h2><p>{category}</p></div><a href="/referenzen" aria-label={`${title} Referenz ansehen`}>↗</a></article>)}</div><a className="ledger-link" href="/referenzen">Alle Referenzen ansehen <span>↗</span></a></div></section>
 
-    <section className="work-teaser section"><div className="container"><div className="section-head"><p className="section-kicker">Selected energy</p><p className="section-note">Kultur, Produkt und Handwerk – unterschiedlich im Ausdruck, verbunden in der Haltung.</p></div><div className="work-stage"><div className="stage-type"><span>Don&apos;t</span><span>blend</span><em>in.</em></div><figure className="stage-shot shot-one" data-parallax="-.08" data-scroll-tilt="9"><img src="/references/cityofgod.webp" alt="Referenzarbeit für Gambino36" /></figure><figure className="stage-shot shot-two" data-parallax=".08" data-scroll-tilt="-10"><img src="/references/zizou-01.webp" alt="Referenzarbeit für Zizou Fashion" /></figure><div className="stage-index">01—03</div><a className="stage-link" href="/referenzen">Alle Arbeiten<br />ansehen <span>↗</span></a></div></div></section>
+    <section className="argument"><div className="container argument-grid"><div className="argument-label"><span>02</span><p>Was wir anders machen</p></div><blockquote>„Wenn ein Auftritt<br />austauschbar ist,<br />ist er <em>zu spät.</em>“</blockquote><div className="argument-note"><p>Wir suchen zuerst nach dem Kern – nicht nach dem nächsten Trend. Daraus entwickeln wir Systeme, die im Alltag funktionieren und im Kopf bleiben.</p><a href="/ansatz">Unser Ansatz <span>↗</span></a></div></div></section>
 
-    <section className="signal-section"><div className="container"><div className="signal-top"><p className="section-kicker">Pracht / Signal</p><span>02</span></div><div className="signal-layout"><h2>Substanz<br />vor <em>Show.</em></h2><div className="signal-copy"><p>Unser Job ist nicht, etwas beliebig lauter zu machen. Sondern das Signal zu finden, das Ihre Marke unverwechselbar macht – und es so zu verstärken, dass es ankommt.</p><div className="signal-ledger"><span>01 <b>Verstehen</b> Kontext vor Aktion</span><span>02 <b>Verdichten</b> Klarheit vor Komplexität</span><span>03 <b>Bewegen</b> Wirkung vor Lautstärke</span></div></div></div></div></section>
+    <section className="home-services-v2"><div className="container"><p className="section-kicker">Felder, in denen wir arbeiten</p><div className="service-columns"><a href="/leistungen"><span>01</span><strong>Strategie</strong><em>Richtung<br />schaffen</em></a><a href="/leistungen"><span>02</span><strong>Marke</strong><em>Haltung<br />zeigen</em></a><a href="/leistungen"><span>03</span><strong>Digital</strong><em>Reichweite<br />bewegen</em></a><a href="/leistungen"><span>04</span><strong>Objekt</strong><em>Werte<br />bewahren</em></a></div></div></section>
 
-    <section className="clients section"><div className="container"><div className="section-head"><p className="section-kicker">Ausgewählte Kunden</p><p className="section-note">Partnerschaften, die auf Klarheit, Vertrauen und echter Zusammenarbeit beruhen.</p></div><div className="client-grid">{clients.map(([name, type, logo]) => <article className="client-logo" key={name}><img src={logo} alt={name} /><small>{type}</small></article>)}</div><a className="text-link clients-link" href="/referenzen">Alle Referenzen entdecken <span>↗</span></a></div></section>
+    <section className="home-clients"><div className="container"><div className="ledger-head"><p className="section-kicker">Vertrauen</p><p>Unterschiedliche Branchen. Ein gemeinsamer Anspruch an Substanz.</p></div><div className="client-grid">{clients.map(([name, type, logo]) => <article className="client-logo" key={name}><img src={logo} alt={name} /><small>{type}</small></article>)}</div></div></section>
 
-    <section className="statement section container"><div className="statement-card"><p className="section-kicker">Unser Anspruch</p><blockquote>Aus Ideen<br />werden <em>Ergebnisse.</em></blockquote><p className="statement-copy">Keine Lösungen von der Stange. Wir verbinden unternehmerisches Denken mit Gestaltung, die sich richtig anfühlt – und richtig funktioniert.</p><div className="statement-mark" aria-hidden="true">P</div></div></section>
-    <section className="home-services section"><div className="container"><p className="section-kicker">Was wir machen</p><div className="home-service-grid"><h2>Strategie, die<br /><em>in Bewegung bringt.</em></h2><div><p>Von der Positionierung bis zum digitalen Auftritt: Wir verbinden die Disziplinen, die Ihre Marke nach vorne bringen.</p><a className="round-link dark-round" href="/leistungen"><span>Leistungen</span><b>↗</b></a></div></div></div></section>
-    <section className="contact"><div className="contact-mark" aria-hidden="true">PP/</div><div className="container contact-content"><p className="section-kicker">Kontakt</p><h2>Bereit für<br /><em>den nächsten Schritt?</em></h2><a className="mail-link" href="mailto:info@pracht-performance.de">info@pracht-performance.de <span>↗</span></a><div className="contact-meta"><p>+49 159 04047342<br />Obere Erlentiefen Str. 28<br />59192 Bergkamen</p><p>Mo – Fr · 09:00 – 18:00<br />Sa · 12:00 – 18:00</p></div></div></section>
+    <section className="home-contact"><div className="container"><p className="section-kicker">Nächster Schritt</p><h2>Ein Projekt, das<br /><em>nicht egal ist.</em></h2><a href="mailto:info@pracht-performance.de">info@pracht-performance.de <span>↗</span></a><p className="home-contact-meta">Bergkamen, überall.<br />Strategie, Marke, Digital, Objekt.</p></div></section>
     <SiteFooter />
   </main>;
 }
