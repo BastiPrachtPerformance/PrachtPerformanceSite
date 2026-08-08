@@ -13,12 +13,12 @@ export function CookieNotice() {
 
   if (!visible || accepted) return null;
 
-  return <aside className="cookie-notice" role="dialog" aria-modal="true" aria-labelledby="cookie-title" aria-describedby="cookie-copy">
+  return <aside className="cookie-notice" role="status" aria-live="polite" aria-labelledby="cookie-title" aria-describedby="cookie-copy">
     <div className="cookie-notice-panel">
-      <p className="cookie-notice-index">P/ — HINWEIS</p>
-      <h2 id="cookie-title">Cookies &amp;<br /><em>Datenschutz.</em></h2>
-      <p id="cookie-copy">Wir verwenden ausschließlich technisch notwendige Technologien, damit diese Website zuverlässig funktioniert. Analyse- und Marketing-Cookies werden nicht eingesetzt.</p>
-      <div className="cookie-notice-actions"><button type="button" onClick={() => setAccepted(true)}>Weiter zur Website <span>↗</span></button><a href="/datenschutz">Datenschutz</a></div>
+      <p className="cookie-notice-index">P/ — DATENSCHUTZ</p>
+      <h2 id="cookie-title">Kurz<br /><em>transparent.</em></h2>
+      <p id="cookie-copy">Diese Website setzt keine Analyse- oder Marketing-Cookies ein. Mehr dazu im Datenschutz.</p>
+      <div className="cookie-notice-actions"><button type="button" onClick={() => setAccepted(true)}>Alles klar <span>↗</span></button><a href="/datenschutz">Details</a></div>
     </div>
   </aside>;
 }
