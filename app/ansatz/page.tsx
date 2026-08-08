@@ -1,3 +1,12 @@
 import { ContactBand, PageIntro, SiteFooter } from "../components/SiteShell";
-const steps = [["01", "Analyse & Beratung", "Wir hören genau hin, analysieren die Ausgangslage und definieren Ziele, die wirklich weiterhelfen."], ["02", "Konzeption & Planung", "Aus Erkenntnissen entsteht eine konkrete Roadmap: fokussiert, transparent und auf Ihr Unternehmen zugeschnitten."], ["03", "Umsetzung & Implementierung", "Strategie, Gestaltung und Kommunikation greifen ineinander. Wir kümmern uns um eine verlässliche Umsetzung."], ["04", "Monitoring & Optimierung", "Wir behalten Wirkung und Performance im Blick – und verbessern dort, wo es einen spürbaren Unterschied macht."]];
-export default function Ansatz() { return <main><PageIntro eyebrow="Unser Ansatz" title={<>Klar denken.<br /><em>Wirkung schaffen.</em></>} copy="Kein starres Schema, sondern ein klarer Prozess, der sich an Ihrem Ziel orientiert." /><section className="approach section container"><p className="approach-lead">Wir verbinden strategische Beratung mit konsequenter Umsetzung. So entsteht Arbeit, die nicht nur gut aussieht, sondern im Alltag Ihres Unternehmens funktioniert.</p><div className="approach-steps">{steps.map(([number, title, copy]) => <article key={number}><span>{number}</span><h2>{title}</h2><p>{copy}</p></article>)}</div></section><ContactBand /><SiteFooter /></main>; }
+
+const steps = [
+  ["01", "Analyse & Beratung", "Wir hören genau hin, analysieren die Ausgangslage und definieren Ziele, die wirklich weiterhelfen."],
+  ["02", "Konzeption & Planung", "Aus Erkenntnissen entsteht eine konkrete Roadmap: fokussiert, transparent und auf Ihr Unternehmen zugeschnitten."],
+  ["03", "Umsetzung & Implementierung", "Strategie, Gestaltung und Kommunikation greifen ineinander. Wir kümmern uns um eine verlässliche Umsetzung."],
+  ["04", "Monitoring & Optimierung", "Wir behalten Wirkung und Performance im Blick – und verbessern dort, wo es einen spürbaren Unterschied macht."],
+];
+
+export default function Ansatz() {
+  return <main className="inner-page"><PageIntro eyebrow="Unser Ansatz" title={<>Klar denken.<br /><em>Wirkung schaffen.</em></>} copy="Kein starres Schema, sondern ein klarer Prozess, der sich an Ihrem Ziel orientiert." /><section className="approach section container"><p className="approach-lead">Wir verbinden strategische Beratung mit konsequenter Umsetzung. So entsteht Arbeit, die nicht nur gut aussieht, sondern im Alltag Ihres Unternehmens funktioniert.</p><div className="approach-steps">{steps.map(([number, title, copy]) => <article key={number}><span>{number}</span><h2>{title}</h2><p>{copy}</p></article>)}</div></section><ContactBand /><SiteFooter /></main>;
+}

@@ -1,12 +1,5 @@
 import { SiteFooter, SiteHeader } from "./components/SiteShell";
 
-const projects = [
-  ["01", "Eigenmarken", "Produkt · Strategie · Markenwelt", "/references/produkt-01.webp", "image"],
-  ["02", "E&N Dienstleistung", "Positionierung · Digital · Kommunikation", "/clients/Logo2.png", "logo"],
-  ["03", "Urlaubduhnen", "Tourismus · Digitaler Auftritt · Content", "/clients/ogo7.webp", "logo"],
-  ["04", "Zizou Fashion", "Fashion · Creative Direction · Social", "/references/zizou-01.webp", "image"],
-];
-
 const clients = [
   ["PIECHA", "Handwerksbetrieb", "/clients/piechalogo.png"],
   ["ZIZOU", "Fashion", "/clients/zizou.gif"],
@@ -17,20 +10,18 @@ const clients = [
 
 export default function Home() {
   return <main className="home-v2">
-    <section className="manifesto-hero" id="top">
+    <section className="atelier-hero" id="top">
       <SiteHeader />
-      <div className="manifesto-ticker" aria-hidden="true"><div>STRATEGIE · MARKE · DIGITAL · OBJEKT · STRATEGIE · MARKE · DIGITAL · OBJEKT · </div></div>
-      <div className="container manifesto-layout">
-        <p className="manifesto-index hero-in hero-in-one">P/ — BERGKAMEN / 2026</p>
-        <h1><span className="hero-in hero-in-two">Kein Auftritt</span><span className="hero-in hero-in-three">ohne</span><span className="hero-in hero-in-four"><em>Aussage.</em></span></h1>
-        <div className="manifesto-copy hero-in hero-in-five"><p>Wir geben Marken eine Form, eine Stimme und einen Auftritt, der nicht nach Aufmerksamkeit fragen muss.</p><a href="/kontakt">Projekt starten <span>↗</span></a></div>
+      <div className="container atelier-hero-layout">
+        <p className="atelier-index atelier-in atelier-delay-one">P/ — BERGKAMEN / 2026</p>
+        <h1><span className="atelier-in atelier-delay-two">Aus Haltung</span><span className="atelier-in atelier-delay-three">wird</span><span className="atelier-in atelier-delay-four"><em>Wiedererkennung.</em></span></h1>
+        <aside className="atelier-card atelier-in atelier-delay-three" data-parallax="-.035" aria-label="Pracht Performance — Strategie, Marke, Digital und Objekt"><span>P/</span><p>Strategie<br />Marke<br />Digital<br />Objekt</p><i aria-hidden="true" /></aside>
+        <div className="atelier-copy atelier-in atelier-delay-five"><p>Wir verbinden Strategie, Gestaltung und Umsetzung zu Marken, die im Kopf bleiben – und im Alltag funktionieren.</p><a href="/kontakt">Projekt starten <span>↗</span></a></div>
       </div>
-      <div className="manifesto-scroll container hero-in hero-in-six"><span>Scroll, wenn du bereit bist</span><i aria-hidden="true" /><span>↓</span></div>
+      <div className="atelier-scroll container atelier-in atelier-delay-six"><span>Scroll to explore</span><i aria-hidden="true" /><span>↓</span></div>
     </section>
 
     <section className="home-intro"><div className="container"><p className="section-kicker">Pracht Performance / Independent since 2018</p><div className="home-intro-copy"><h2>Wir bauen keine<br />Auftritte. Wir bauen<br /><em>Wiedererkennung.</em></h2><p>Strategie, Gestaltung und operative Umsetzung gehören für uns zusammen. Nur so entsteht eine Marke, die nicht beim ersten Kontakt endet.</p></div></div></section>
-
-    <section className="project-ledger"><div className="container"><div className="ledger-head"><p className="section-kicker">Selected work</p><p>Eigene Marken, echte Betriebe und digitale Erlebnisse mit einer klaren Handschrift.</p></div><div className="project-list">{projects.map(([number, title, category, image, kind]) => <article className={`project-row project-${kind}`} key={title} data-project={number}><div className="project-count">{number}</div><div className="project-image" data-parallax="-.04"><img src={image} alt={`${title} Projektarbeit`} /></div><div className="project-title"><h2>{title}</h2><p>{category}</p></div><a href="/referenzen" aria-label={`${title} Referenz ansehen`}>↗</a></article>)}</div><a className="ledger-link" href="/referenzen">Alle Referenzen ansehen <span>↗</span></a></div></section>
 
     <section className="argument"><div className="container argument-grid"><div className="argument-label"><span>02</span><p>Was wir anders machen</p></div><blockquote>„Wenn ein Auftritt<br />austauschbar ist,<br />ist er <em>zu spät.</em>“</blockquote><div className="argument-note"><p>Wir suchen zuerst nach dem Kern – nicht nach dem nächsten Trend. Daraus entwickeln wir Systeme, die im Alltag funktionieren und im Kopf bleiben.</p><a href="/ansatz">Unser Ansatz <span>↗</span></a></div></div></section>
 

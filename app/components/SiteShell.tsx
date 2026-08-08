@@ -22,9 +22,9 @@ export function SiteFooter() {
 }
 
 export function PageIntro({ eyebrow, title, copy, children }: { eyebrow: string; title: ReactNode; copy: string; children?: ReactNode }) {
-  return <section className="page-intro"><SiteHeader /><div className="container page-intro-content"><p className="eyebrow">{eyebrow}</p><h1>{title}</h1><p>{copy}</p>{children}</div></section>;
+  return <section className="sub-hero"><SiteHeader /><div className="container sub-hero-layout"><p className="sub-hero-index">P/ — {eyebrow}</p><h1>{title}</h1><div className="sub-hero-tag" aria-hidden="true"><span>P/</span><i /></div><div className="sub-hero-copy"><p>{copy}</p>{children}</div></div></section>;
 }
 
 export function ContactBand() {
-  return <section className="contact-band"><div className="container"><p className="section-kicker">Kontakt</p><h2>Ein gutes Projekt<br />beginnt mit <em>einem Gespräch.</em></h2><a className="mail-link" href="mailto:info@pracht-performance.de">info@pracht-performance.de <span>↗</span></a></div></section>;
+  return <section className="closing-band"><div className="container"><p className="section-kicker">Kontakt</p><h2>Ein gutes Projekt<br />beginnt mit <em>einem Gespräch.</em></h2><a className="mail-link" href="mailto:info@pracht-performance.de">info@pracht-performance.de <span>↗</span></a></div></section>;
 }

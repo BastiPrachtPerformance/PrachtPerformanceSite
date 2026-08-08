@@ -7,4 +7,7 @@ const services = [
   ["04", "Brand Development", "Eine Markenidentität, die Haltung zeigt und wiedererkennbar bleibt.", ["Markenanalyse & Positionierung", "Corporate Identity", "Visuelle Markenelemente", "Brand Guidelines & Kommunikation"]],
   ["05", "Objektservice", "Professionelle Verwaltung und Optimierung für Immobilien und Objekte.", ["Objektbetreuung", "Strukturierte Abläufe", "Optimierung von Rentabilität", "Persönliche Ansprechpartner"]],
 ];
-export default function Leistungen() { return <main><PageIntro eyebrow="Leistungen" title={<>Komplexes einfach<br /><em>auf den Punkt.</em></>} copy="Maßgeschneiderte Lösungen für Unternehmen, die mit klarer Richtung wachsen möchten." /><section className="detail-services section container">{services.map(([number, title, copy, items]) => <article className="detail-service" key={number}><span>{number}</span><div><h2>{title}</h2><p>{copy}</p></div><ul>{items.map((item) => <li key={item}>{item}</li>)}</ul><a href="/kontakt" aria-label={`${title} anfragen`}>↗</a></article>)}</section><ContactBand /><SiteFooter /></main>; }
+
+export default function Leistungen() {
+  return <main className="inner-page"><PageIntro eyebrow="Leistungen" title={<>Komplexes einfach<br /><em>auf den Punkt.</em></>} copy="Maßgeschneiderte Lösungen für Unternehmen, die mit klarer Richtung wachsen möchten." /><section className="detail-services section container">{services.map(([number, title, copy, items]) => <article className="detail-service" key={number}><span>{number}</span><div><h2>{title}</h2><p>{copy}</p></div><ul>{items.map((item) => <li key={item}>{item}</li>)}</ul><a href="/kontakt" aria-label={`${title} anfragen`}>↗</a></article>)}</section><ContactBand /><SiteFooter /></main>;
+}

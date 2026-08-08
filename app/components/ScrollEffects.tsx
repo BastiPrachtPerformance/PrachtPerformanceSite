@@ -7,7 +7,7 @@ export function ScrollEffects() {
 
   useEffect(() => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    const targets = Array.from(document.querySelectorAll<HTMLElement>("main > section:not(.edition-hero):not(.manifesto-hero), .client-logo, .reference-card, .detail-service, .approach-steps article, .service-columns a"));
+    const targets = Array.from(document.querySelectorAll<HTMLElement>("main > section:not(.edition-hero):not(.manifesto-hero):not(.atelier-hero):not(.sub-hero), .client-logo, .reference-card, .detail-service, .approach-steps article, .service-columns a"));
     targets.forEach((element, index) => { element.classList.add("scroll-reveal"); element.style.setProperty("--stagger", `${(index % 5) * 65}ms`); });
     const observer = new IntersectionObserver((entries) => entries.forEach((entry) => entry.isIntersecting && entry.target.classList.add("is-in-view")), { threshold: 0.12, rootMargin: "0px 0px -8%" });
     targets.forEach((element) => observer.observe(element));
@@ -16,8 +16,8 @@ export function ScrollEffects() {
     const tiltItems = Array.from(document.querySelectorAll<HTMLElement>("[data-scroll-tilt]"));
     const heroContent = document.querySelector<HTMLElement>(".hero-content");
     const heroFooter = document.querySelector<HTMLElement>(".hero-footer");
-    const editionGrid = document.querySelector<HTMLElement>(".manifesto-layout");
-    const editionScroll = document.querySelector<HTMLElement>(".manifesto-scroll");
+    const editionGrid = document.querySelector<HTMLElement>(".atelier-hero-layout");
+    const editionScroll = document.querySelector<HTMLElement>(".atelier-scroll");
     let frame = 0;
     const updateMotion = () => {
       frame = 0;
