@@ -3,9 +3,9 @@ import { SiteFooter, SiteHeader } from "./components/SiteShell";
 const clients = [
   ["PIECHA", "Handwerksbetrieb", "/clients/piechalogo.png"],
   ["ZIZOU", "Fashion", "/clients/zizou.gif"],
-  ["VHG", "Dirk Grosser", "/clients/logo5.png"],
+  ["KRD Group", "Modulbäder", "/clients/Logo3.png"],
   ["urlaubduhnen.de", "MEERzeit", "/clients/ogo7.webp"],
-  ["Podologie", "Gesundheit", "/clients/podologie.png"],
+  ["Dirk Grosser", "Überdachungen", "/clients/logo5.png"],
 ];
 
 export default function Home() {
