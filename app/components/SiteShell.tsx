@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 
 export function Brand() {
-  return <a className="brand" href="/" aria-label="Pracht Performance – Startseite"><img src="/logo.png" alt="Pracht Performance" /></a>;
+  return <a className="brand" href="/" aria-label="Pracht Performance – Startseite"><img src="/preview.png" alt="Pracht Performance" /></a>;
 }
 
 export function SiteHeader({ light = false }: { light?: boolean }) {

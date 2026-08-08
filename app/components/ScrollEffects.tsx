@@ -39,5 +39,5 @@ export function ScrollEffects() {
     return () => { window.clearTimeout(timer); observer.disconnect(); window.removeEventListener("scroll", onScroll); window.removeEventListener("pointermove", onPointerMove); if (frame) cancelAnimationFrame(frame); };
   }, []);
 
-  return <><div className={`site-loader ${ready ? "is-ready" : ""}`} aria-hidden="true"><img src="/logo.png" alt="" /><i /><b>PRACHT PERFORMANCE</b></div><div className="scroll-progress" aria-hidden="true"><i /></div><div className="cursor-cross" ref={cursorRef} aria-hidden="true"><i /><b /><em>P/</em></div></>;
+  return <><div className={`site-loader ${ready ? "is-ready" : ""}`} aria-hidden="true"><img src="/preview.png" alt="" /><i /><b>PRACHT PERFORMANCE</b></div><div className="scroll-progress" aria-hidden="true"><i /></div><div className="cursor-cross" ref={cursorRef} aria-hidden="true"><i /><b /><em>P/</em></div></>;
 }
