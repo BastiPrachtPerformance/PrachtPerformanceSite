@@ -7,7 +7,7 @@ export function ScrollEffects() {
 
   useEffect(() => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    const targets = Array.from(document.querySelectorAll<HTMLElement>("main > section:not(.edition-hero):not(.manifesto-hero), .client-logo, .reference-card, .detail-service, .approach-steps article, .project-row, .service-columns a"));
+    const targets = Array.from(document.querySelectorAll<HTMLElement>("main > section:not(.edition-hero):not(.manifesto-hero), .client-logo, .reference-card, .detail-service, .approach-steps article, .service-columns a"));
     targets.forEach((element, index) => { element.classList.add("scroll-reveal"); element.style.setProperty("--stagger", `${(index % 5) * 65}ms`); });
     const observer = new IntersectionObserver((entries) => entries.forEach((entry) => entry.isIntersecting && entry.target.classList.add("is-in-view")), { threshold: 0.12, rootMargin: "0px 0px -8%" });
     targets.forEach((element) => observer.observe(element));
