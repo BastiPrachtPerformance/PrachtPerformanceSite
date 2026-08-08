@@ -17,15 +17,17 @@ const clients = [
 
 export default function Home() {
   return <main className="home-v2">
-    <section className="edition-hero" id="top">
+    <section className="manifesto-hero" id="top">
       <SiteHeader />
-      <div className="container edition-grid">
-        <p className="edition-number entry-pop entry-one">P/01 — 2026</p>
-        <h1 className="entry-pop entry-two">Wirkung<br />braucht<br /><em>Eigensinn.</em></h1>
-        <aside className="edition-signal entry-signal" data-parallax="-.05" aria-label="Pracht Performance: Strategie, Marke und Digital"><span className="signal-index">P/</span><span className="signal-word">NICHT<br />NORMAL.</span><span className="signal-slash" aria-hidden="true">/</span><p>Strategie<br />Marke<br />Digital</p></aside>
-        <div className="edition-copy entry-pop entry-three"><p>Für Unternehmen, die nicht nur sichtbar sein wollen. Sondern eine Haltung zeigen, an die man sich erinnert.</p><a href="/kontakt">Projekt starten <span>↗</span></a></div>
+      <div className="manifesto-ticker" aria-hidden="true"><div>STRATEGIE · MARKE · DIGITAL · OBJEKT · STRATEGIE · MARKE · DIGITAL · OBJEKT · </div></div>
+      <div className="container manifesto-layout">
+        <p className="manifesto-index hero-in hero-in-one">P/ — BERGKAMEN / 2026</p>
+        <h1><span className="hero-in hero-in-two">Kein Auftritt</span><span className="hero-in hero-in-three">ohne</span><span className="hero-in hero-in-four"><em>Aussage.</em></span></h1>
+        <div className="manifesto-mark hero-mark" data-parallax="-.06" aria-hidden="true"><span>P</span><i>/</i></div>
+        <div className="manifesto-copy hero-in hero-in-five"><p>Wir geben Marken eine Form, eine Stimme und einen Auftritt, der nicht nach Aufmerksamkeit fragen muss.</p><a href="/kontakt">Projekt starten <span>↗</span></a></div>
+        <p className="manifesto-note hero-in hero-in-six">Für Betriebe, Persönlichkeiten<br />und Marken mit Ambition.</p>
       </div>
-      <div className="edition-scroll container entry-pop entry-four"><span>Scroll to read</span><i aria-hidden="true" /><span>BERGKAMEN / DE</span></div>
+      <div className="manifesto-scroll container hero-in hero-in-six"><span>Scroll, wenn du bereit bist</span><i aria-hidden="true" /><span>↓</span></div>
     </section>
 
     <section className="home-intro"><div className="container"><p className="section-kicker">Pracht Performance / Independent since 2018</p><div className="home-intro-copy"><h2>Wir bauen keine<br />Auftritte. Wir bauen<br /><em>Wiedererkennung.</em></h2><p>Strategie, Gestaltung und operative Umsetzung gehören für uns zusammen. Nur so entsteht eine Marke, die nicht beim ersten Kontakt endet.</p></div></div></section>
