@@ -1,9 +1,10 @@
 import { SiteFooter, SiteHeader } from "./components/SiteShell";
 
 const projects = [
-  ["01", "Gambino36", "Cover Art · Markenwelt", "/references/cityofgod.webp"],
-  ["02", "Zizou Fashion", "Fashion · Creative Direction", "/references/zizou-01.webp"],
-  ["03", "Hemso069", "Visual Identity · Music", "/references/hemso-01.webp"],
+  ["01", "Eigenmarken", "Produkt · Strategie · Markenwelt", "/references/produkt-01.webp", "image"],
+  ["02", "E&N Dienstleistung", "Positionierung · Digital · Kommunikation", "/clients/Logo2.png", "logo"],
+  ["03", "Urlaubduhnen", "Tourismus · Digitaler Auftritt · Content", "/clients/ogo7.webp", "logo"],
+  ["04", "Zizou Fashion", "Fashion · Creative Direction · Social", "/references/zizou-01.webp", "image"],
 ];
 
 const clients = [
@@ -19,17 +20,17 @@ export default function Home() {
     <section className="edition-hero" id="top">
       <SiteHeader />
       <div className="container edition-grid">
-        <p className="edition-number">01 / 05</p>
-        <h1>Keine<br /><em>Fassade.</em><br />Eine Haltung.</h1>
-        <figure className="edition-cover" data-parallax="-.05"><img src="/references/cityofgod.webp" alt="Cover-Art-Referenz von Gambino36" /><figcaption>Gambino36 / City of God<br />Cover Art, 2024</figcaption></figure>
-        <div className="edition-copy"><p>Wir arbeiten an dem, was Unternehmen unverwechselbar macht: Position, Ausdruck und der Mut, nicht wie alle anderen zu wirken.</p><a href="/kontakt">Projekt starten <span>↗</span></a></div>
+        <p className="edition-number entry-pop entry-one">01 / 05</p>
+        <h1 className="entry-pop entry-two">Keine<br /><em>Fassade.</em><br />Eine Haltung.</h1>
+        <figure className="edition-cover entry-cover" data-parallax="-.05"><img src="/references/produkt-02.webp" alt="Eigenmarken und Produktentwicklung von Pracht Performance" /><figcaption>Eigenmarken / Pracht Performance<br />Markenwelt, 2024</figcaption></figure>
+        <div className="edition-copy entry-pop entry-three"><p>Wir arbeiten an dem, was Unternehmen unverwechselbar macht: Position, Ausdruck und der Mut, nicht wie alle anderen zu wirken.</p><a href="/kontakt">Projekt starten <span>↗</span></a></div>
       </div>
-      <div className="edition-scroll container"><span>Scroll to read</span><i aria-hidden="true" /><span>BERGKAMEN / DE</span></div>
+      <div className="edition-scroll container entry-pop entry-four"><span>Scroll to read</span><i aria-hidden="true" /><span>BERGKAMEN / DE</span></div>
     </section>
 
     <section className="home-intro"><div className="container"><p className="section-kicker">Pracht Performance / Independent since 2018</p><div className="home-intro-copy"><h2>Wir bauen keine<br />Auftritte. Wir bauen<br /><em>Wiedererkennung.</em></h2><p>Strategie, Gestaltung und operative Umsetzung gehören für uns zusammen. Nur so entsteht eine Marke, die nicht beim ersten Kontakt endet.</p></div></div></section>
 
-    <section className="project-ledger"><div className="container"><div className="ledger-head"><p className="section-kicker">Selected work</p><p>3 von vielen unterschiedlichen Wegen, Sichtbarkeit ernst zu nehmen.</p></div><div className="project-list">{projects.map(([number, title, category, image]) => <article className="project-row" key={title}><div className="project-count">{number}</div><div className="project-image" data-parallax="-.04"><img src={image} alt={`${title} Projektarbeit`} /></div><div className="project-title"><h2>{title}</h2><p>{category}</p></div><a href="/referenzen" aria-label={`${title} Referenz ansehen`}>↗</a></article>)}</div><a className="ledger-link" href="/referenzen">Alle Referenzen ansehen <span>↗</span></a></div></section>
+    <section className="project-ledger"><div className="container"><div className="ledger-head"><p className="section-kicker">Selected work</p><p>Eigene Marken, echte Betriebe und digitale Erlebnisse mit einer klaren Handschrift.</p></div><div className="project-list">{projects.map(([number, title, category, image, kind]) => <article className={`project-row project-${kind}`} key={title}><div className="project-count">{number}</div><div className="project-image" data-parallax="-.04"><img src={image} alt={`${title} Projektarbeit`} /></div><div className="project-title"><h2>{title}</h2><p>{category}</p></div><a href="/referenzen" aria-label={`${title} Referenz ansehen`}>↗</a></article>)}</div><a className="ledger-link" href="/referenzen">Alle Referenzen ansehen <span>↗</span></a></div></section>
 
     <section className="argument"><div className="container argument-grid"><div className="argument-label"><span>02</span><p>Was wir anders machen</p></div><blockquote>„Wenn ein Auftritt<br />austauschbar ist,<br />ist er <em>zu spät.</em>“</blockquote><div className="argument-note"><p>Wir suchen zuerst nach dem Kern – nicht nach dem nächsten Trend. Daraus entwickeln wir Systeme, die im Alltag funktionieren und im Kopf bleiben.</p><a href="/ansatz">Unser Ansatz <span>↗</span></a></div></div></section>
 

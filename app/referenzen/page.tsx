@@ -1,7 +1,7 @@
 import { ContactBand, PageIntro, SiteFooter } from "../components/SiteShell";
 
 const references: [string, string, string, string, string, string[], string][] = [
-  ["G36", "Gambino36", "Music Artist", "Album Cover & Brand Identity", "Komplette visuelle Betreuung für Releases über mehrere Jahre.", ["/references/cityofgod.webp", "/references/ghetto.webp"], "cover"],
+  ["G36", "Gambino36", "Music Artist", "Album Cover & Brand Identity", "Komplette visuelle Betreuung für Releases über mehrere Jahre.", ["/references/ghetto.webp"], "cover"],
   ["H69", "Hemso069", "Music Artist", "Cover & visuelle Identität", "Konsistente visuelle Identität über alle Releases.", ["/references/hemso-01.webp", "/references/hemso-02.webp"], "cover"],
   ["ZZ", "Zizou Fashion", "Fashion Brand", "Design & Markenentwicklung", "Vollständige kreative Betreuung über drei Jahre.", ["/references/zizou-01.webp", "/references/zizou-02.webp"], "cover"],
   ["EB", "Eigenmarken & Produktdesign", "Brand Development", "Markenentwicklung", "Komplette Markenentwicklung für Amazon-Produkte und Eigenmarken.", ["/references/produkt-01.webp", "/references/produkt-02.webp"], "cover"],
