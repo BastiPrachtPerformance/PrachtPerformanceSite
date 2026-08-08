@@ -20,10 +20,10 @@ export default function Home() {
     <section className="edition-hero" id="top">
       <SiteHeader />
       <div className="container edition-grid">
-        <p className="edition-number entry-pop entry-one">01 / 05</p>
-        <h1 className="entry-pop entry-two">Keine<br /><em>Fassade.</em><br />Eine Haltung.</h1>
-        <figure className="edition-cover entry-cover" data-parallax="-.05"><img src="/references/produkt-02.webp" alt="Eigenmarken und Produktentwicklung von Pracht Performance" /><figcaption>Eigenmarken / Pracht Performance<br />Markenwelt, 2024</figcaption></figure>
-        <div className="edition-copy entry-pop entry-three"><p>Wir arbeiten an dem, was Unternehmen unverwechselbar macht: Position, Ausdruck und der Mut, nicht wie alle anderen zu wirken.</p><a href="/kontakt">Projekt starten <span>↗</span></a></div>
+        <p className="edition-number entry-pop entry-one">P/01 — 2026</p>
+        <h1 className="entry-pop entry-two">Wirkung<br />braucht<br /><em>Eigensinn.</em></h1>
+        <aside className="edition-signal entry-signal" data-parallax="-.05" aria-label="Pracht Performance: Strategie, Marke und Digital"><span className="signal-index">P/</span><span className="signal-word">NICHT<br />NORMAL.</span><span className="signal-slash" aria-hidden="true">/</span><p>Strategie<br />Marke<br />Digital</p></aside>
+        <div className="edition-copy entry-pop entry-three"><p>Für Unternehmen, die nicht nur sichtbar sein wollen. Sondern eine Haltung zeigen, an die man sich erinnert.</p><a href="/kontakt">Projekt starten <span>↗</span></a></div>
       </div>
       <div className="edition-scroll container entry-pop entry-four"><span>Scroll to read</span><i aria-hidden="true" /><span>BERGKAMEN / DE</span></div>
     </section>
