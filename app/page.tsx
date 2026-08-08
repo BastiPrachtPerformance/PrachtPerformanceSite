@@ -10,17 +10,16 @@ const clients = [
 
 export default function Home() {
   return <main className="home-v2">
-    <section className="studio-hero" id="top">
+    <section className="editorial-hero" id="top">
       <SiteHeader />
-      <div className="studio-lines" aria-hidden="true">{Array.from({ length: 8 }, (_, index) => <i key={index} />)}</div>
-      <div className="container studio-hero-layout">
-        <p className="studio-index studio-in studio-delay-one">P/ — BERGKAMEN · DE</p>
-        <h1><span className="studio-in studio-delay-two">Mehr als</span><span className="studio-in studio-delay-three"><em>sichtbar.</em></span></h1>
-        <div className="studio-copy studio-in studio-delay-four"><p>Strategie, Gestaltung und Umsetzung für Marken, die nicht nur gut aussehen, sondern etwas auslösen.</p><a href="/kontakt">Projekt anfragen <span>↗</span></a></div>
-        <aside className="studio-frame studio-in studio-delay-three" data-parallax="-.03" aria-label="Pracht Performance: Strategie, Marke, Digital und Objekt"><span>P/</span><b>Since<br />2018</b><i aria-hidden="true" /></aside>
-        <div className="studio-fields studio-in studio-delay-five"><span>Strategie</span><span>Marke</span><span>Digital</span><span>Objekt</span></div>
+      <div className="editorial-glow" aria-hidden="true" />
+      <div className="container editorial-hero-layout">
+        <p className="editorial-index editorial-in editorial-delay-one">P/ — BERGKAMEN · DE</p>
+        <h1><span className="editorial-in editorial-delay-two">Mehr als</span><span className="editorial-in editorial-delay-three"><em>sichtbar.</em></span></h1>
+        <div className="editorial-copy editorial-in editorial-delay-four"><p>Strategie, Gestaltung und Umsetzung für Marken, die nicht nur gut aussehen, sondern etwas auslösen.</p><a href="/kontakt">Projekt anfragen <span>↗</span></a></div>
+        <div className="editorial-fields editorial-in editorial-delay-five"><span>Strategie</span><span>Marke</span><span>Digital</span><span>Objekt</span></div>
       </div>
-      <div className="studio-scroll container studio-in studio-delay-six"><span>Scroll to explore</span><i aria-hidden="true" /><span>↓</span></div>
+      <div className="editorial-scroll container editorial-in editorial-delay-six"><span>Scroll to explore</span><i aria-hidden="true" /><span>↓</span></div>
     </section>
 
     <section className="home-intro"><div className="container"><p className="section-kicker">Pracht Performance / Independent since 2018</p><div className="home-intro-copy"><h2>Wir bauen keine<br />Auftritte. Wir bauen<br /><em>Wiedererkennung.</em></h2><p>Strategie, Gestaltung und operative Umsetzung gehören für uns zusammen. Nur so entsteht eine Marke, die nicht beim ersten Kontakt endet.</p></div></div></section>
