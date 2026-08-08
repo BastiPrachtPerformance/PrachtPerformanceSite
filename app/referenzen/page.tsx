@@ -1,5 +1,7 @@
 import { ContactBand, PageIntro, SiteFooter } from "../components/SiteShell";
 
+export const dynamic = "force-static";
+
 const references: [string, string, string, string, string, string[], string][] = [
   ["G36", "Gambino36", "Music Artist", "Album Cover & Brand Identity", "Komplette visuelle Betreuung für Releases über mehrere Jahre.", ["/references/ghetto.webp"], "cover"],
   ["H69", "Hemso069", "Music Artist", "Cover & visuelle Identität", "Konsistente visuelle Identität über alle Releases.", ["/references/hemso-01.webp", "/references/hemso-02.webp"], "cover"],

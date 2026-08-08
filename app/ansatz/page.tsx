@@ -1,5 +1,7 @@
 import { ContactBand, PageIntro, SiteFooter } from "../components/SiteShell";
 
+export const dynamic = "force-static";
+
 const steps = [
   ["01", "Analyse & Beratung", "Wir hören genau hin, analysieren die Ausgangslage und definieren Ziele, die wirklich weiterhelfen."],
   ["02", "Konzeption & Planung", "Aus Erkenntnissen entsteht eine konkrete Roadmap: fokussiert, transparent und auf Ihr Unternehmen zugeschnitten."],

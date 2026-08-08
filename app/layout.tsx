@@ -4,6 +4,8 @@ import { ScrollEffects } from "./components/ScrollEffects";
 import { CookieNotice } from "./components/CookieNotice";
 import "./globals.css";
 
+export const dynamic = "force-static";
+
 const geist = Geist({
   variable: "--font-geist",
   subsets: ["latin"],

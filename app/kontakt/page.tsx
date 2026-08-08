@@ -1,5 +1,7 @@
 import { PageIntro, SiteFooter } from "../components/SiteShell";
 
+export const dynamic = "force-static";
+
 const topics = [
   ["Marke & Positionierung", "Marke"],
   ["Website & Digitales", "Digital"],

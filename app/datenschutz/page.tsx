@@ -1,5 +1,7 @@
 import { SiteFooter, SiteHeader } from "../components/SiteShell";
 
+export const dynamic = "force-static";
+
 export const metadata = { title: "Datenschutz | Pracht Performance" };
 
 export default function Datenschutz() {

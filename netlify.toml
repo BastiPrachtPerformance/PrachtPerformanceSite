@@ -1,0 +1,36 @@
+[build]
+  command = "npm run build"
+  publish = "dist/client"
+
+[build.environment]
+  NODE_VERSION = "22"
+
+[[redirects]]
+  from = "/ansatz"
+  to = "/ansatz.html"
+  status = 200
+
+[[redirects]]
+  from = "/leistungen"
+  to = "/leistungen.html"
+  status = 200
+
+[[redirects]]
+  from = "/referenzen"
+  to = "/referenzen.html"
+  status = 200
+
+[[redirects]]
+  from = "/kontakt"
+  to = "/kontakt.html"
+  status = 200
+
+[[redirects]]
+  from = "/impressum"
+  to = "/impressum.html"
+  status = 200
+
+[[redirects]]
+  from = "/datenschutz"
+  to = "/datenschutz.html"
+  status = 200

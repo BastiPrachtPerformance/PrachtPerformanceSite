@@ -1,5 +1,7 @@
 import { ContactBand, PageIntro, SiteFooter } from "../components/SiteShell";
 
+export const dynamic = "force-static";
+
 const services = [
   ["01", "Strategisches Management", "Klarheit für Entscheidungen, Prozesse und die nächsten relevanten Schritte.", ["Analyse Ihrer Unternehmenssituation", "Individuelle Wachstumsstrategien", "Prozessoptimierung & Change Management", "KPI-Definition und Performance-Monitoring"]],
   ["02", "Digital Marketing", "Strategien und Inhalte, die Ihre Zielgruppe dort erreichen, wo sie sich bewegt.", ["Digitale Marketingstrategie", "Social Media & Content-Erstellung", "SEO, Google Ads & Advertising", "Analytics und Erfolgsmessung"]],
