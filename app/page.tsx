@@ -10,15 +10,17 @@ const clients = [
 
 export default function Home() {
   return <main className="home-v2">
-    <section className="atelier-hero" id="top">
+    <section className="studio-hero" id="top">
       <SiteHeader />
-      <div className="container atelier-hero-layout">
-        <p className="atelier-index atelier-in atelier-delay-one">P/ — BERGKAMEN / 2026</p>
-        <h1><span className="atelier-in atelier-delay-two">Aus Haltung</span><span className="atelier-in atelier-delay-three">wird</span><span className="atelier-in atelier-delay-four"><em>Wiedererkennung.</em></span></h1>
-        <aside className="atelier-card atelier-in atelier-delay-three" data-parallax="-.035" aria-label="Pracht Performance — Strategie, Marke, Digital und Objekt"><span>P/</span><p>Strategie<br />Marke<br />Digital<br />Objekt</p><i aria-hidden="true" /></aside>
-        <div className="atelier-copy atelier-in atelier-delay-five"><p>Wir verbinden Strategie, Gestaltung und Umsetzung zu Marken, die im Kopf bleiben – und im Alltag funktionieren.</p><a href="/kontakt">Projekt starten <span>↗</span></a></div>
+      <div className="studio-lines" aria-hidden="true">{Array.from({ length: 8 }, (_, index) => <i key={index} />)}</div>
+      <div className="container studio-hero-layout">
+        <p className="studio-index studio-in studio-delay-one">P/ — BERGKAMEN · DE</p>
+        <h1><span className="studio-in studio-delay-two">Mehr als</span><span className="studio-in studio-delay-three"><em>sichtbar.</em></span></h1>
+        <div className="studio-copy studio-in studio-delay-four"><p>Strategie, Gestaltung und Umsetzung für Marken, die nicht nur gut aussehen, sondern etwas auslösen.</p><a href="/kontakt">Projekt anfragen <span>↗</span></a></div>
+        <aside className="studio-frame studio-in studio-delay-three" data-parallax="-.03" aria-label="Pracht Performance: Strategie, Marke, Digital und Objekt"><span>P/</span><b>Since<br />2018</b><i aria-hidden="true" /></aside>
+        <div className="studio-fields studio-in studio-delay-five"><span>Strategie</span><span>Marke</span><span>Digital</span><span>Objekt</span></div>
       </div>
-      <div className="atelier-scroll container atelier-in atelier-delay-six"><span>Scroll to explore</span><i aria-hidden="true" /><span>↓</span></div>
+      <div className="studio-scroll container studio-in studio-delay-six"><span>Scroll to explore</span><i aria-hidden="true" /><span>↓</span></div>
     </section>
 
     <section className="home-intro"><div className="container"><p className="section-kicker">Pracht Performance / Independent since 2018</p><div className="home-intro-copy"><h2>Wir bauen keine<br />Auftritte. Wir bauen<br /><em>Wiedererkennung.</em></h2><p>Strategie, Gestaltung und operative Umsetzung gehören für uns zusammen. Nur so entsteht eine Marke, die nicht beim ersten Kontakt endet.</p></div></div></section>
