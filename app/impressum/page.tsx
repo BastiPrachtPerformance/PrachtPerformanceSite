@@ -8,7 +8,7 @@ export default function Impressum() {
     <article className="container legal-content">
       <p className="legal-lead">Angaben gemäß § 5 Digitale-Dienste-Gesetz (DDG).</p>
       <section><h2>Verantwortlich für diese Website</h2><p><strong>Pracht Performance</strong><br />David Pracht<br />Obere Erlentiefenstraße 28<br />59192 Bergkamen<br />Deutschland</p></section>
-      <section><h2>Kontakt</h2><p>Telefon: <a href="tel:+4915904047342">+49 159 04047342</a><br />E-Mail: <a href="mailto:info@pracht-performance.de">info@pracht-performance.de</a></p></section>
+      <section><h2>Kontakt</h2><p>Telefon: <a href="tel:+4915161740318">+49 1516 1740318</a><br />E-Mail: <a href="mailto:info@pracht-performance.de">info@pracht-performance.de</a></p></section>
       <section><h2>Umsatzsteuer-ID</h2><p>Umsatzsteuer-Identifikationsnummer gemäß § 27a Umsatzsteuergesetz:<br /><strong>DE321457227</strong></p></section>
       <section><h2>Verbraucherstreitbeilegung</h2><p>Wir sind nicht bereit und nicht verpflichtet, an Streitbeilegungsverfahren vor einer Verbraucherschlichtungsstelle teilzunehmen.</p></section>
       <section><h2>Haftung für Inhalte</h2><p>Als Diensteanbieter sind wir für eigene Inhalte auf diesen Seiten nach den allgemeinen Gesetzen verantwortlich. Eine Verpflichtung zur Überwachung übermittelter oder gespeicherter fremder Informationen besteht nach den allgemeinen gesetzlichen Vorschriften nicht. Verpflichtungen zur Entfernung oder Sperrung der Nutzung von Informationen bleiben hiervon unberührt. Bei Bekanntwerden entsprechender Rechtsverletzungen entfernen wir diese Inhalte umgehend.</p></section>
