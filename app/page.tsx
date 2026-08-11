@@ -1,11 +1,14 @@
 import { SiteFooter, SiteHeader } from "./components/SiteShell";
 
 const clients = [
-  ["PIECHA", "Handwerksbetrieb", "/clients/piechalogo.png"],
+  ["PIECHA", "Handwerksbetrieb", "/clients/piecha.svg"],
   ["ZIZOU", "Fashion", "/clients/zizou.gif"],
   ["KRD Group", "Modulbäder", "/clients/Logo3.png"],
   ["urlaubduhnen.de", "MEERzeit", "/clients/ogo7.webp"],
   ["Dirk Grosser", "Überdachungen", "/clients/logo5.png"],
+  ["CKEVENTCENTER Bergkamen", "Eventlocation", "/clients/ckeventcenter-bergkamen.png"],
+  ["Berendsohn", "Werbemittel", "/clients/Logo2.png"],
+  ["Ennovex", "Energieverwaltung", "/clients/ennovex.png"],
 ];
 
 export default function Home() {
@@ -18,9 +21,9 @@ export default function Home() {
         <p className="editorial-index editorial-in editorial-delay-one">P/ — BERGKAMEN · DE</p>
         <h1><span className="editorial-in editorial-delay-two">Mehr als</span><span className="editorial-in editorial-delay-three"><em>sichtbar.</em></span></h1>
         <div className="editorial-copy editorial-in editorial-delay-four"><p>Strategie, Gestaltung und Umsetzung für Marken, die nicht nur gut aussehen, sondern etwas auslösen.</p><a href="/kontakt">Projekt anfragen <span>↗</span></a></div>
-        <div className="editorial-fields editorial-in editorial-delay-five"><span>Strategie</span><span>Marke</span><span>Digital</span><span>Objekt</span></div>
+        <aside className="editorial-coordinates editorial-in editorial-delay-five" aria-label="Standort Bergkamen"><div><span>51.617° N</span><span>07.645° E</span><strong>Bergkamen / DE</strong><small>Arbeitsradius: überall.</small></div></aside>
+        <div className="editorial-fields editorial-in editorial-delay-five"><span>Strategische Beratung</span><span>Markenentwicklung</span><span>Digitale Lösungen</span><span>Objektbetreuung</span></div>
       </div>
-      <div className="editorial-scroll container editorial-in editorial-delay-six"><span>Scroll to explore</span><i aria-hidden="true" /><span>↓</span></div>
     </section>
 
     <section className="home-intro"><div className="container"><p className="section-kicker">Pracht Performance / Independent since 2018</p><div className="home-intro-copy"><h2 data-parallax=".022">Wir bauen keine<br />Auftritte. Wir bauen<br /><em>Wiedererkennung.</em></h2><p>Strategie, Gestaltung und operative Umsetzung gehören für uns zusammen. Nur so entsteht eine Marke, die nicht beim ersten Kontakt endet.</p></div></div></section>

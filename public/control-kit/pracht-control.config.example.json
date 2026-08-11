@@ -1,0 +1,10 @@
+{
+  "siteId": "kunde-beispiel-01",
+  "domain": "www.kundenwebsite.de",
+  "controlApi": "https://pracht-performance.de/api",
+  "tracking": {
+    "pageViews": true,
+    "contactClicks": true,
+    "formSubmissions": true
+  }
+}

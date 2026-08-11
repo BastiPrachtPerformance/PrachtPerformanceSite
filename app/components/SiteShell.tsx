@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { MobileMenu } from "./MobileMenu";
 
 export function Brand() {
   return <a className="brand" href="/" aria-label="Pracht Performance – Startseite"><img src="/preview.png" alt="Pracht Performance" /></a>;
@@ -7,18 +8,19 @@ export function Brand() {
 export function SiteHeader({ light = false }: { light?: boolean }) {
   return <header className={`site-header container ${light ? "is-light" : ""}`}>
     <Brand />
-    <nav aria-label="Hauptnavigation">
+    <nav className="desktop-navigation" aria-label="Hauptnavigation">
       <a href="/leistungen">Leistungen</a>
       <a href="/ansatz">Ansatz</a>
       <a href="/referenzen">Referenzen</a>
       <a href="/kontakt">Kontakt</a>
     </nav>
     <a className="header-cta" href="/kontakt">Projekt anfragen <span>↗</span></a>
+    <MobileMenu />
   </header>;
 }
 
 export function SiteFooter() {
-  return <footer className="footer container"><Brand /><p>© {new Date().getFullYear()} Pracht Performance</p><div><a href="/impressum">Impressum</a><a href="/datenschutz">Datenschutz</a></div></footer>;
+  return <footer className="footer container"><p>© {new Date().getFullYear()} Pracht Performance</p><div><a href="/impressum">Impressum</a><a href="/datenschutz">Datenschutz</a></div></footer>;
 }
 
 export function PageIntro({ eyebrow, title, copy, children }: { eyebrow: string; title: ReactNode; copy: string; children?: ReactNode }) {

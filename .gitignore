@@ -39,3 +39,10 @@ yarn-error.log*
 /outputs/
 /work/
 /dev-server.log
+tsconfig.tsbuildinfo
+
+# local project exports and source archives
+/Pracht-Performance-Netlify-Upload*/
+/Pracht-Performance-Netlify-Upload*.zip
+/BisherigeSeite/
+/.codex-remote-attachments/

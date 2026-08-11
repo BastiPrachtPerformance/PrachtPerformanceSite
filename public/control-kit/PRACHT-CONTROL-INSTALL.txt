@@ -1,0 +1,25 @@
+PRACHT CONTROL — INSTALLATION
+
+ZIEL
+Diese Kundenwebsite soll mit Pracht Control verbunden werden.
+
+WICHTIG
+- Bestehendes Design und Funktionen nicht veraendern.
+- Die Steuerung muss vor dem Laden der eigentlichen Website greifen.
+- Keine geheimen Zugangsdaten im Browser oder Repository speichern.
+
+EINBAU
+1. Die Werte aus pracht-control.config.json verwenden.
+2. Einen Netlify Edge Adapter fuer alle HTML-Seiten einbauen.
+3. Der Adapter fragt Pracht Control nach dem Website-Status.
+4. Status Aktiv: Seite normal ausliefern.
+5. Status Wartung: individuelle Wartungsseite mit HTTP 503 ausliefern.
+6. Status 404: individuelle 404-Seite mit HTTP 404 ausliefern.
+7. Klicks auf Telefon, E-Mail, WhatsApp und erfolgreiche Formulare als Events erfassen.
+8. Alle secrets ausschliesslich als Netlify Environment Variables mit Functions-Scope anlegen.
+
+TESTS
+- Website aktiv testen.
+- Wartungsmodus testen.
+- 404-Modus testen.
+- Kontrollieren, dass Assets, Formulare und Navigation bei Aktiv weiterhin funktionieren.
