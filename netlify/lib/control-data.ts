@@ -25,37 +25,22 @@ export type ControlSite = {
 };
 
 export type ControlData = {
+  schemaVersion: 2;
   sites: ControlSite[];
   logs: string[];
   analytics: Record<string, TrafficPoint[]>;
   updatedAt: string;
 };
 
-const customers: Array<Pick<ControlSite, "id" | "name" | "domain" | "hosting">> = [
-  { id: "pracht", name: "Pracht Performance", domain: "pracht-performance.de", hosting: "Netlify" },
-  { id: "ckeventcenter", name: "CKEVENTCENTER", domain: "ckeventcenter.de", hosting: "Netlify" },
-  { id: "en-dienstleistung", name: "E&N Dienstleistung", domain: "en-dienstleistung.de", hosting: "Netlify" },
-  { id: "urlaub-duhnen", name: "Urlaub Duhnen", domain: "urlaubduhnen.de", hosting: "Netlify" },
-  { id: "zizou", name: "ZIZOU Clothing", domain: "zizouclothing.com", hosting: "Netlify" },
-  { id: "vhg", name: "VHG Dirk Grosser", domain: "vhg.de", hosting: "Netlify" },
-];
-
 function createToken() {
   return randomBytes(24).toString("base64url");
 }
 
 function createSeed(): ControlData {
-  const now = new Date().toISOString();
   return {
-    sites: customers.map((customer) => ({
-      ...customer,
-      state: "Aktiv",
-      connection: "Nicht verbunden",
-      update: "Control Kit noch nicht installiert",
-      createdAt: now,
-      controlToken: createToken(),
-    })),
-    logs: ["Pracht Control ist bereit. Verbinde jetzt die erste Kundenwebsite."],
+    schemaVersion: 2,
+    sites: [],
+    logs: ["Pracht Control ist bereit. Lege jetzt die erste Kundenwebsite an."],
     analytics: {},
     updatedAt: now,
   };
@@ -66,7 +51,7 @@ function store() {
 }
 
 function isCurrentData(value: ControlData | null): value is ControlData {
-  return Boolean(value && Array.isArray(value.sites) && value.sites.every((site) => "connection" in site && "controlToken" in site) && value.analytics);
+  return Boolean(value && value.schemaVersion === 2 && Array.isArray(value.sites) && value.sites.every((site) => "connection" in site && "controlToken" in site) && value.analytics);
 }
 
 export async function getControlData() {
