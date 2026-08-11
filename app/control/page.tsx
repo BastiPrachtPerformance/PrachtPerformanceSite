@@ -156,7 +156,7 @@ export default function ControlPage() {
       <div className="control-account"><span>BP</span><p><b>Bastian Pracht</b><small>Administrator</small></p><button type="button" aria-label="Abmelden" onClick={() => void logout()}>Aus</button></div>
     </aside>
     <section className="control-main" id="overview">
-      <header className="control-topbar"><div><p className="control-kicker">Pracht Control / Live</p><h1>Guten Morgen,<br /><em>Bastian.</em></h1></div><div className="control-live"><span></span> Zentrale erreichbar</div></header>
+      <header className="control-topbar"><div><p className="control-kicker">Pracht Control / Live</p><h1>Guten Morgen,<br /><em>David.</em></h1></div><div className="control-live"><span></span> Zentrale erreichbar</div></header>
       <div className="control-preview">{notice}<b>LIVE</b></div>
       <section className="control-metrics" aria-label="Übersicht Kennzahlen">
         <article><p>Betreute Websites</p><strong>{sites.length}</strong><small>{connectedCount} mit Control Kit verbunden</small></article>
