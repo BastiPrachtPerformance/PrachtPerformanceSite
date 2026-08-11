@@ -42,7 +42,7 @@ function createSeed(): ControlData {
     sites: [],
     logs: ["Pracht Control ist bereit. Lege jetzt die erste Kundenwebsite an."],
     analytics: {},
-    updatedAt: now,
+    updatedAt: new Date().toISOString(),
   };
 }
 

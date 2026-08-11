@@ -112,19 +112,27 @@ export default function ControlPage() {
     setCreating(true);
     setCreateMessage("");
     const form = new FormData(event.currentTarget);
-    const response = await fetch("/api/control", { method: "POST", credentials: "same-origin", headers: { "content-type": "application/json" }, body: JSON.stringify({ action: "create-site", name: form.get("name"), domain: form.get("domain"), hosting: form.get("hosting") }) });
-    const result = await response.json() as { error?: string; data?: DashboardData; site?: Site };
-    setCreating(false);
-    if (!response.ok || !result.data || !result.site) {
-      setCreateMessage(result.error ?? "Kundenwebsite konnte nicht angelegt werden.");
-      return;
+    const controller = new AbortController();
+    const timeout = window.setTimeout(() => controller.abort(), 15000);
+    try {
+      const response = await fetch("/api/control", { method: "POST", credentials: "same-origin", headers: { "content-type": "application/json" }, body: JSON.stringify({ action: "create-site", name: form.get("name"), domain: form.get("domain"), hosting: form.get("hosting") }), signal: controller.signal });
+      const result = await response.json().catch(() => ({})) as { error?: string; data?: DashboardData; site?: Site };
+      if (!response.ok || !result.data || !result.site) {
+        setCreateMessage(result.error ?? "Kundenwebsite konnte nicht angelegt werden.");
+        return;
+      }
+      if (result.data.sites) setSites(result.data.sites);
+      if (result.data.logs) setLogs(result.data.logs);
+      if (result.data.analytics) setAnalytics(result.data.analytics);
+      setSelectedId(result.site.id);
+      setShowCreateSite(false);
+      setNotice(`${result.site.name} wurde angelegt. Das Control Kit kann jetzt eingebaut werden.`);
+    } catch {
+      setCreateMessage("Die Anlage dauert gerade zu lange. Bitte erneut versuchen.");
+    } finally {
+      window.clearTimeout(timeout);
+      setCreating(false);
     }
-    if (result.data.sites) setSites(result.data.sites);
-    if (result.data.logs) setLogs(result.data.logs);
-    if (result.data.analytics) setAnalytics(result.data.analytics);
-    setSelectedId(result.site.id);
-    setShowCreateSite(false);
-    setNotice(`${result.site.name} wurde angelegt. Das Control Kit kann jetzt eingebaut werden.`);
   }
 
   function copyKit() {
