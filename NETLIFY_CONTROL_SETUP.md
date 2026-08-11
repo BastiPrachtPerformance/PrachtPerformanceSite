@@ -14,11 +14,15 @@ Die statische Website und das Control-Backend werden zusammen aus diesem Projekt
 ## Was danach bereits funktioniert
 
 - geschuetzter Zugang zum Control-Dashboard
-- zentrale, dauerhaft gespeicherte Kundenliste
+- zentrale, dauerhaft gespeicherte Kundenliste inklusive Kundenanlage
 - zentrale Statusaenderung (Aktiv, Wartung, 404)
-- Audit-Log der Statusaenderungen
-- Vorlage fuer das Pracht Control Kit unter `/control-kit/`
+- echte Traffic- und Kontakt-Events fuer verbundene Websites
+- Audit-Log der Statusaenderungen und ersten Live-Verbindungen
+- Pracht Control Kit unter `/control-kit/`, inklusive Netlify Edge Adapter und Tracker
 
 ## Naechste Ausbaustufe
 
-Die erste Kundenwebsite bekommt den Netlify Edge Adapter. Der Adapter fragt den zentral gespeicherten Status ab und liefert bei Wartung oder 404 die passende Kundenansicht aus.
+1. Im Dashboard die Kundenwebsite auswaehlen und **Control-Variablen kopieren**.
+2. Diese ausschliesslich als Netlify Environment Variables der Kundenwebsite setzen.
+3. `netlify-edge-adapter.ts` als Netlify Edge Function und `pracht-control-tracker.js` in die Kundenwebsite uebernehmen.
+4. Kundenseite deployen. Der erste Aufruf markiert die Website im Panel automatisch als verbunden.

@@ -2,6 +2,7 @@
   "siteId": "kunde-beispiel-01",
   "domain": "www.kundenwebsite.de",
   "controlApi": "https://pracht-performance.de/api",
+  "netlifyEnvironment": ["PRACHT_CONTROL_URL", "PRACHT_CONTROL_SITE_ID", "PRACHT_CONTROL_TOKEN"],
   "tracking": {
     "pageViews": true,
     "contactClicks": true,
