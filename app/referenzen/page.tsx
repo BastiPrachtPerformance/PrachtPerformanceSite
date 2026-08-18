@@ -39,7 +39,7 @@ export default function Referenzen() {
             </article>
           ))}
         </div>
-        <a className="references-contact-button" href="/kontakt">Kontakt aufnehmen <span>{"\u2197"}</span></a>
+        <a className="references-contact-button" href="/kontakt.html">Kontakt aufnehmen <span>{"\u2197"}</span></a>
       </section>
       <ContactBand />
       <SiteFooter />

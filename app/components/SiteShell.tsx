@@ -9,18 +9,18 @@ export function SiteHeader({ light = false }: { light?: boolean }) {
   return <header className={`site-header container ${light ? "is-light" : ""}`}>
     <Brand />
     <nav className="desktop-navigation" aria-label="Hauptnavigation">
-      <a href="/leistungen">Leistungen</a>
-      <a href="/ansatz">Ansatz</a>
-      <a href="/referenzen">Referenzen</a>
-      <a href="/kontakt">Kontakt</a>
+      <a href="/leistungen.html">Leistungen</a>
+      <a href="/ansatz.html">Ansatz</a>
+      <a href="/referenzen.html">Referenzen</a>
+      <a href="/kontakt.html">Kontakt</a>
     </nav>
-    <a className="header-cta" href="/kontakt">Projekt anfragen <span>↗</span></a>
+    <a className="header-cta" href="/kontakt.html">Projekt anfragen <span>↗</span></a>
     <MobileMenu />
   </header>;
 }
 
 export function SiteFooter() {
-  return <footer className="footer container"><p>© {new Date().getFullYear()} Pracht Performance</p><div><a href="/impressum">Impressum</a><a href="/datenschutz">Datenschutz</a></div></footer>;
+  return <footer className="footer container"><p>© {new Date().getFullYear()} Pracht Performance</p><div><a href="/impressum.html">Impressum</a><a href="/datenschutz.html">Datenschutz</a></div></footer>;
 }
 
 export function PageIntro({ eyebrow, title, copy, children }: { eyebrow: string; title: ReactNode; copy: string; children?: ReactNode }) {

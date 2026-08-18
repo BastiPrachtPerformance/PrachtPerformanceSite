@@ -4,10 +4,10 @@ import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 
 const links = [
-  ["Leistungen", "/leistungen"],
-  ["Ansatz", "/ansatz"],
-  ["Referenzen", "/referenzen"],
-  ["Kontakt", "/kontakt"],
+  ["Leistungen", "/leistungen.html"],
+  ["Ansatz", "/ansatz.html"],
+  ["Referenzen", "/referenzen.html"],
+  ["Kontakt", "/kontakt.html"],
 ] as const;
 
 export function MobileMenu() {
