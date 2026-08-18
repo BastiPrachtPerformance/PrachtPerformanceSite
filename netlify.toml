@@ -12,33 +12,46 @@
   from = "/ansatz"
   to = "/ansatz.html"
   status = 200
+  force = true
 
 [[redirects]]
   from = "/leistungen"
   to = "/leistungen.html"
   status = 200
+  force = true
+
+[[redirects]]
+  from = "/leistung"
+  to = "/leistungen.html"
+  status = 200
+  force = true
 
 [[redirects]]
   from = "/referenzen"
   to = "/referenzen.html"
   status = 200
+  force = true
 
 [[redirects]]
   from = "/kontakt"
   to = "/kontakt.html"
   status = 200
+  force = true
 
 [[redirects]]
   from = "/impressum"
   to = "/impressum.html"
   status = 200
+  force = true
 
 [[redirects]]
   from = "/datenschutz"
   to = "/datenschutz.html"
   status = 200
+  force = true
 
 [[redirects]]
   from = "/control"
   to = "/control.html"
   status = 200
+  force = true
