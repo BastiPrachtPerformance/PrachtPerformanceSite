@@ -428,7 +428,8 @@ final class PrachtSuite
                 'gross' => (float) ($invoice['gross_total'] ?? 0),
             ];
         }
-        $pdf = new PrachtInvoicePdf(); $page = $pdf->newPage(); $accent = self::hexRgb($data['organization']['accent_color'] ?? '#fa5139'); $ink = [0.08,0.08,0.07]; $muted = [0.42,0.40,0.36]; $rule = [0.78,0.76,0.71];
+        $liveOrganization = self::one('SELECT * FROM organizations WHERE id=?', [$orgId]); if ($liveOrganization) $data['organization'] = array_merge((array) ($data['organization'] ?? []), $liveOrganization);
+        $pdf = new PrachtInvoicePdf(); $page = $pdf->newPage(); $accent = self::hexRgb($data['organization']['accent_color'] ?? '#ffffff'); $ink = [0.08,0.08,0.07]; $muted = [0.42,0.40,0.36]; $rule = [0.78,0.76,0.71];
         $logo = self::storagePath('logos/' . ($data['organization']['logo_filename'] ?? ''));
         if (is_file($logo)) $pdf->image($page, $logo, 42, 728, 145, 52); else { $pdf->text($page,42,758,18,(string)($data['organization']['name'] ?? 'Unternehmen'),$ink,'bold'); }
         $sender = array_filter([$data['organization']['name'] ?? '', $data['organization']['street'] ?? '', trim(($data['organization']['postal_code'] ?? '') . ' ' . ($data['organization']['city'] ?? '')), !empty($data['organization']['email']) ? 'E-Mail: ' . $data['organization']['email'] : '']);
