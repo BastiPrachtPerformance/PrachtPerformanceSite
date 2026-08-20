@@ -11,6 +11,11 @@ final class PrachtSuite
         self::boot();
         $action = (string) ($_GET['action'] ?? '');
         if ($action === 'asset') { self::serveAsset(); return; }
+        if ($action === 'download_pdf') {
+            $downloadUser = self::user();
+            if (!$downloadUser || $surface !== 'invoice' || !$downloadUser['organization_id']) { http_response_code(403); self::messagePage('Download nicht möglich', 'Bitte zuerst im Invoice Portal anmelden.'); return; }
+            self::downloadPdf((int) $downloadUser['organization_id'], (int) ($_GET['id'] ?? 0)); return;
+        }
         if ($action === 'logout') { self::logout($surface); return; }
         if ($_SERVER['REQUEST_METHOD'] === 'POST') self::handlePost($surface);
         $user = self::user();
@@ -427,7 +432,11 @@ final class PrachtSuite
     {
         $invoice = self::one('SELECT * FROM invoices WHERE id=? AND organization_id=? AND status="issued"',[$id,$orgId]); if (!$invoice) { http_response_code(404); self::messagePage('PDF nicht gefunden','Diese Rechnung steht nicht zur Verfügung.'); return; }
         $path=self::storagePath('pdf/' . $orgId . '-' . $id . '.pdf'); if (!is_file($path)) self::generatePdf($orgId,$id); if (!is_file($path)) throw new RuntimeException('PDF konnte nicht erzeugt werden.');
-        header('Content-Type: application/pdf'); header('Content-Disposition: attachment; filename="' . self::e($invoice['pdf_filename'] ?: 'rechnung.pdf') . '"'); header('Content-Length: ' . filesize($path)); readfile($path); exit;
+        clearstatcache(true, $path); $size = filesize($path); if ($size === false || $size < 100) throw new RuntimeException('Die PDF-Datei ist leer oder konnte nicht gelesen werden.');
+        $filename = preg_replace('/[^A-Za-z0-9._-]+/', '-', (string)($invoice['pdf_filename'] ?: 'rechnung.pdf')) ?: 'rechnung.pdf';
+        if (session_status() === PHP_SESSION_ACTIVE) session_write_close();
+        while (ob_get_level() > 0) ob_end_clean();
+        header('Content-Type: application/pdf'); header('Content-Disposition: attachment; filename="' . $filename . '"'); header('Content-Length: ' . $size); header('X-Content-Type-Options: nosniff'); readfile($path); exit;
     }
 
     private static function invoicePreview(int $orgId, int $id, array $org): void
