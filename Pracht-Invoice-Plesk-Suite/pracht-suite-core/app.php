@@ -458,7 +458,7 @@ final class PrachtSuite
     {
         $invoice = self::one('SELECT * FROM invoices WHERE id=? AND organization_id=? AND status="issued"',[$id,$orgId]); if (!$invoice) { http_response_code(404); self::messagePage('PDF nicht gefunden','Diese Rechnung steht nicht zur Verfügung.'); return; }
         try {
-            $path=self::storagePath('pdf/' . $orgId . '-' . $id . '.pdf'); $generated = null; if (!is_file($path)) $generated = self::generatePdf($orgId,$id); if ($generated === null && !is_file($path)) throw new RuntimeException('PDF konnte nicht erzeugt werden.');
+            $path=self::storagePath('pdf/' . $orgId . '-' . $id . '.pdf'); $generated = null; clearstatcache(true, $path); $existingSize = is_file($path) ? filesize($path) : false; if ($existingSize === false || $existingSize < 100) $generated = self::generatePdf($orgId,$id); if ($generated === null && !is_file($path)) throw new RuntimeException('PDF konnte nicht erzeugt werden.');
         } catch (Throwable $error) {
             error_log('Pracht Invoice PDF: ' . $error->getMessage()); http_response_code(500); self::messagePage('PDF konnte nicht erstellt werden','Bitte die Rechnung erneut öffnen und den Download noch einmal starten.'); return;
         }
