@@ -398,7 +398,7 @@ final class PrachtSuite
         } catch (Throwable $error) { self::db()->rollBack(); throw $error; }
     }
 
-    private static function generatePdf(int $orgId, int $invoiceId): void
+    private static function generatePdf(int $orgId, int $invoiceId): string
     {
         $invoice = self::one('SELECT * FROM invoices WHERE id=? AND organization_id=? AND status="issued"', [$invoiceId,$orgId]); if (!$invoice) throw new RuntimeException('Rechnung nicht gefunden.');
         $data = json_decode((string) $invoice['snapshot'], true);
@@ -451,22 +451,22 @@ final class PrachtSuite
         $sumY=$y-6; $pdf->line($page,345,$sumY,553,$sumY,$ink); $pdf->text($page,358,$sumY-20,8,'Nettobetrag',$muted); $pdf->text($page,500,$sumY-20,8,self::pdfMoney($data['net']),$ink); $pdf->text($page,358,$sumY-39,8,'zzgl. Umsatzsteuer',$muted); $pdf->text($page,500,$sumY-39,8,self::pdfMoney($data['tax']),$ink); $pdf->rect($page,345,$sumY-72,208,24,$accent,true); $pdf->text($page,358,$sumY-63,9,'Gesamtbetrag',$ink,'bold'); $pdf->text($page,500,$sumY-63,9,self::pdfMoney($data['gross']),$ink,'bold');
         $footer = trim((string)($data['footer'] ?? '')); $bank = array_filter(['IBAN: ' . ($data['organization']['iban'] ?? ''), 'BIC: ' . ($data['organization']['bic'] ?? '')]); $legal = array_filter(['Steuernummer: ' . ($data['organization']['tax_number'] ?? ''), 'USt-IdNr.: ' . ($data['organization']['vat_id'] ?? '')]);
         $pdf->line($page,42,78,553,78,$rule); $pdf->wrapped($page,42,60,230,$footer,7,$muted); $pdf->block($page,308,60,$bank,7,$muted); $pdf->block($page,442,60,$legal,7,$muted);
-        $filename = 'rechnung-' . preg_replace('/[^A-Za-z0-9_-]+/', '-', (string)$data['number']) . '.pdf'; $path = self::storagePath('pdf/' . $orgId . '-' . $invoiceId . '.pdf'); self::ensureStorage(); file_put_contents($path,$pdf->output()); self::exec('UPDATE invoices SET pdf_filename=?,pdf_hash=? WHERE id=?',[$filename,hash_file('sha256',$path),$invoiceId]);
+        $filename = 'rechnung-' . preg_replace('/[^A-Za-z0-9_-]+/', '-', (string)$data['number']) . '.pdf'; $path = self::storagePath('pdf/' . $orgId . '-' . $invoiceId . '.pdf'); $pdfOutput = $pdf->output(); self::ensureStorage(); $written = @file_put_contents($path, $pdfOutput); if ($written !== false) self::exec('UPDATE invoices SET pdf_filename=?,pdf_hash=? WHERE id=?',[$filename,hash('sha256',$pdfOutput),$invoiceId]); return $pdfOutput;
     }
 
     private static function downloadPdf(int $orgId, int $id): void
     {
         $invoice = self::one('SELECT * FROM invoices WHERE id=? AND organization_id=? AND status="issued"',[$id,$orgId]); if (!$invoice) { http_response_code(404); self::messagePage('PDF nicht gefunden','Diese Rechnung steht nicht zur Verfügung.'); return; }
         try {
-            $path=self::storagePath('pdf/' . $orgId . '-' . $id . '.pdf'); if (!is_file($path)) self::generatePdf($orgId,$id); if (!is_file($path)) throw new RuntimeException('PDF konnte nicht erzeugt werden.');
+            $path=self::storagePath('pdf/' . $orgId . '-' . $id . '.pdf'); $generated = null; if (!is_file($path)) $generated = self::generatePdf($orgId,$id); if ($generated === null && !is_file($path)) throw new RuntimeException('PDF konnte nicht erzeugt werden.');
         } catch (Throwable $error) {
             error_log('Pracht Invoice PDF: ' . $error->getMessage()); http_response_code(500); self::messagePage('PDF konnte nicht erstellt werden','Bitte die Rechnung erneut öffnen und den Download noch einmal starten.'); return;
         }
-        clearstatcache(true, $path); $size = filesize($path); if ($size === false || $size < 100) throw new RuntimeException('Die PDF-Datei ist leer oder konnte nicht gelesen werden.');
+        clearstatcache(true, $path); $size = $generated !== null ? strlen($generated) : filesize($path); if ($size === false || $size < 100) throw new RuntimeException('Die PDF-Datei ist leer oder konnte nicht gelesen werden.');
         $filename = preg_replace('/[^A-Za-z0-9._-]+/', '-', (string)($invoice['pdf_filename'] ?: 'rechnung.pdf')) ?: 'rechnung.pdf';
         if (session_status() === PHP_SESSION_ACTIVE) session_write_close();
         while (ob_get_level() > 0) ob_end_clean();
-        header('Content-Type: application/pdf'); header('Content-Disposition: attachment; filename="' . $filename . '"'); header('Content-Length: ' . $size); header('X-Content-Type-Options: nosniff'); readfile($path); exit;
+        header('Content-Type: application/pdf'); header('Content-Disposition: attachment; filename="' . $filename . '"'); header('Content-Length: ' . $size); header('X-Content-Type-Options: nosniff'); if ($generated !== null) echo $generated; else readfile($path); exit;
     }
 
     private static function invoicePreview(int $orgId, int $id, array $org): void
