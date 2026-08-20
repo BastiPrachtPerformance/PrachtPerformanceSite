@@ -223,7 +223,7 @@ final class PrachtSuite
         if (!$org) { self::messagePage('Mandant nicht gefunden', 'Bitte wende dich an Pracht Performance.'); return; }
         $view = (string) ($_GET['view'] ?? 'dashboard');
         if ($view === 'pdf') { self::downloadPdf($orgId, (int) ($_GET['id'] ?? 0)); return; }
-        if ($view === 'preview') { self::invoicePreview($orgId, (int) ($_GET['id'] ?? 0), $org); return; }
+        if ($view === 'preview') { self::invoicePreviewExact($orgId, (int) ($_GET['id'] ?? 0), $org); return; }
         self::layout('Pracht Invoice', 'invoice', $user, function () use ($org, $orgId, $view, $user) {
             $nav = ['dashboard' => 'Übersicht', 'new' => 'Neue Rechnung', 'documents' => 'Rechnungen', 'customers' => 'Kunden', 'settings' => 'Vorlage & Profil']; ?>
             <header class="portal-header"><a class="portal-brand" href="?view=dashboard"><span><?= self::e(mb_strtoupper(mb_substr($org['name'], 0, 1))) ?></span><b><?= self::e($org['name']) ?><small>Pracht Invoice</small></b></a><nav><?php foreach ($nav as $key => $label): ?><a class="<?= $view === $key ? 'active' : '' ?>" href="?view=<?= $key ?>"><?= $label ?></a><?php endforeach; ?></nav><details class="user-menu"><summary><?= self::e($user['name']) ?></summary><a href="?view=settings#password">Passwort ändern</a><a href="?action=logout">Abmelden</a></details></header>
@@ -300,7 +300,7 @@ final class PrachtSuite
         foreach ($fields as $field) $values[$field] = trim((string) ($_POST[$field] ?? ''));
         if ($values['name'] === '') throw new RuntimeException('Der Firmenname darf nicht leer sein.');
         if (!preg_match('/^#[0-9a-fA-F]{6}$/', $values['accent_color'])) $values['accent_color'] = '#fa5139';
-        if (!in_array($values['template_key'], ['classic','minimal','bold'], true)) $values['template_key'] = 'classic';
+        if (!in_array($values['template_key'], ['classic','minimal','bold','editorial','mono'], true)) $values['template_key'] = 'classic';
         $logo = self::one('SELECT logo_filename FROM organizations WHERE id=?', [$orgId]);
         if (!empty($_FILES['logo']['tmp_name'])) $logo['logo_filename'] = self::storeLogo($orgId, $_FILES['logo']);
         self::exec('UPDATE organizations SET name=?,email=?,street=?,postal_code=?,city=?,country=?,tax_number=?,vat_id=?,iban=?,bic=?,invoice_prefix=?,accent_color=?,template_key=?,logo_filename=?,updated_at=NOW() WHERE id=?', [...array_values($values), $logo['logo_filename'], $orgId]);
@@ -308,11 +308,11 @@ final class PrachtSuite
 
     private static function storeLogo(int $orgId, array $file): string
     {
-        if (($file['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_OK || ($file['size'] ?? 0) > 3 * 1024 * 1024) throw new RuntimeException('Logo-Upload fehlgeschlagen oder größer als 3 MB.');
+        $uploadError = (int) ($file['error'] ?? UPLOAD_ERR_NO_FILE); if ($uploadError !== UPLOAD_ERR_OK) { $messages = [UPLOAD_ERR_INI_SIZE => 'Das Logo ist größer als das Upload-Limit des Hostings.', UPLOAD_ERR_FORM_SIZE => 'Das Logo ist zu groß.', UPLOAD_ERR_PARTIAL => 'Der Upload wurde unterbrochen.', UPLOAD_ERR_NO_FILE => 'Bitte eine Logo-Datei auswählen.', UPLOAD_ERR_NO_TMP_DIR => 'Auf dem Server fehlt der temporäre Upload-Ordner.', UPLOAD_ERR_CANT_WRITE => 'Das Hosting konnte die Upload-Datei nicht speichern.']; throw new RuntimeException($messages[$uploadError] ?? 'Logo-Upload fehlgeschlagen.'); } if (($file['size'] ?? 0) > 3 * 1024 * 1024) throw new RuntimeException('Das Logo darf maximal 3 MB groß sein.');
         $mime = (new finfo(FILEINFO_MIME_TYPE))->file($file['tmp_name']); if (!in_array($mime, ['image/jpeg','image/png'], true)) throw new RuntimeException('Bitte nur PNG oder JPG hochladen.');
         self::ensureStorage(); $target = self::storagePath('logos/org-' . $orgId . '.jpg');
         if ($mime === 'image/jpeg') { if (!move_uploaded_file($file['tmp_name'], $target)) throw new RuntimeException('Logo konnte nicht gespeichert werden.'); return basename($target); }
-        if (!function_exists('imagecreatefrompng')) throw new RuntimeException('Für PNG-Logos muss in Plesk die PHP-Erweiterung GD aktiviert sein. Bitte JPG verwenden oder GD aktivieren.');
+        if (!function_exists('imagecreatefrompng')) { $pngTarget = self::storagePath('logos/org-' . $orgId . '.png'); if (!move_uploaded_file($file['tmp_name'], $pngTarget)) throw new RuntimeException('Logo konnte nicht gespeichert werden. Bitte die Schreibrechte des Ordners pracht-suite-core/storage/logos prüfen.'); return basename($pngTarget); }
         $image = imagecreatefrompng($file['tmp_name']); if (!$image) throw new RuntimeException('PNG konnte nicht verarbeitet werden.');
         $canvas = imagecreatetruecolor(imagesx($image), imagesy($image)); $white = imagecolorallocate($canvas, 255,255,255); imagefill($canvas, 0,0,$white); imagecopy($canvas,$image,0,0,0,0,imagesx($image),imagesy($image)); imagejpeg($canvas, $target, 88); imagedestroy($image); imagedestroy($canvas); return basename($target);
     }
@@ -429,9 +429,9 @@ final class PrachtSuite
             ];
         }
         $liveOrganization = self::one('SELECT * FROM organizations WHERE id=?', [$orgId]); if ($liveOrganization) $data['organization'] = array_merge((array) ($data['organization'] ?? []), $liveOrganization);
-        $pdf = new PrachtInvoicePdf(); $page = $pdf->newPage(); $accent = self::hexRgb($data['organization']['accent_color'] ?? '#ffffff'); $ink = [0.08,0.08,0.07]; $muted = [0.42,0.40,0.36]; $rule = [0.78,0.76,0.71];
+        $template = (string) ($data['organization']['template_key'] ?? 'classic'); $pdf = new PrachtInvoicePdf(); $page = $pdf->newPage(); $accent = self::hexRgb($data['organization']['accent_color'] ?? '#ffffff'); if ($template === 'minimal') $accent = [1,1,1]; if ($template === 'mono') $accent = [.78,.78,.78]; if ($template === 'editorial') $accent = self::hexRgb($data['organization']['accent_color'] ?? '#d8b36a'); $ink = $template === 'editorial' ? [0.08,0.13,0.20] : [0.08,0.08,0.07]; $muted = [0.42,0.40,0.36]; $rule = $template === 'mono' ? [.62,.62,.62] : [.78,.76,.71];
         $logo = self::storagePath('logos/' . ($data['organization']['logo_filename'] ?? ''));
-        if (is_file($logo)) $pdf->image($page, $logo, 42, 728, 145, 52); else { $pdf->text($page,42,758,18,(string)($data['organization']['name'] ?? 'Unternehmen'),$ink,'bold'); }
+        $logoInfo = is_file($logo) ? @getimagesize($logo) : false; if (is_file($logo) && ($logoInfo[2] ?? 0) === IMAGETYPE_JPEG) $pdf->image($page, $logo, 42, 728, 145, 52); else { $pdf->text($page,42,758,18,(string)($data['organization']['name'] ?? 'Unternehmen'),$ink,'bold'); }
         $sender = array_filter([$data['organization']['name'] ?? '', $data['organization']['street'] ?? '', trim(($data['organization']['postal_code'] ?? '') . ' ' . ($data['organization']['city'] ?? '')), !empty($data['organization']['email']) ? 'E-Mail: ' . $data['organization']['email'] : '']);
         $pdf->rect($page,374,612,179,88,$rule); $pdf->block($page,386,684,$sender,8,$ink);
         $customer = array_filter([$data['customer']['name'] ?? '', $data['customer']['street'] ?? '', trim(($data['customer']['postal_code'] ?? '') . ' ' . ($data['customer']['city'] ?? '')), $data['customer']['country'] ?? '']);
@@ -467,7 +467,14 @@ final class PrachtSuite
         $filename = preg_replace('/[^A-Za-z0-9._-]+/', '-', (string)($invoice['pdf_filename'] ?: 'rechnung.pdf')) ?: 'rechnung.pdf';
         if (session_status() === PHP_SESSION_ACTIVE) session_write_close();
         while (ob_get_level() > 0) ob_end_clean();
-        header('Content-Type: application/pdf'); header('Content-Disposition: attachment; filename="' . $filename . '"'); header('Content-Length: ' . $size); header('X-Content-Type-Options: nosniff'); if ($generated !== null) echo $generated; else readfile($path); exit;
+        $disposition = (($_GET['inline'] ?? '') === '1') ? 'inline' : 'attachment'; header('Content-Type: application/pdf'); header('Content-Disposition: ' . $disposition . '; filename="' . $filename . '"'); header('Content-Length: ' . $size); header('X-Content-Type-Options: nosniff'); if ($generated !== null) echo $generated; else readfile($path); exit;
+    }
+
+    private static function invoicePreviewExact(int $orgId, int $id, array $org): void
+    {
+        $invoice = self::one('SELECT id,invoice_number FROM invoices WHERE id=? AND organization_id=? AND status="issued"', [$id, $orgId]);
+        if (!$invoice) { self::messagePage('Nicht verfügbar', 'Nur final ausgestellte Rechnungen können angezeigt werden.'); return; }
+        ?><!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title><?= self::e($invoice['invoice_number']) ?></title><style>html,body{height:100%;margin:0;background:#e9e7e1;color:#171614;font:14px Arial,sans-serif}.preview-bar{position:fixed;z-index:2;inset:0 0 auto;display:flex;justify-content:flex-end;padding:18px;background:#e9e7e1cc;backdrop-filter:blur(12px)}.preview-bar a{padding:11px 15px;background:#171614;color:#fff;font-weight:700;text-decoration:none}.preview-frame{position:absolute;inset:72px 0 0;border:0;width:100%;height:calc(100% - 72px);background:#e9e7e1}</style></head><body><div class="preview-bar"><a href="?action=download_pdf&amp;id=<?= (int) $invoice['id'] ?>">PDF herunterladen &amp; drucken</a></div><iframe class="preview-frame" title="PDF-Vorschau" src="?action=download_pdf&amp;id=<?= (int) $invoice['id'] ?>&amp;inline=1"></iframe></body></html><?php
     }
 
     private static function invoicePreview(int $orgId, int $id, array $org): void
@@ -480,7 +487,7 @@ final class PrachtSuite
 
     private static function serveAsset(): void
     {
-        $user=self::user(); if(!$user || !$user['organization_id']) { http_response_code(403); exit; } $org=self::one('SELECT logo_filename FROM organizations WHERE id=?',[(int)$user['organization_id']]); $file=$org ? self::storagePath('logos/' . $org['logo_filename']) : ''; if(!$file || !is_file($file)){http_response_code(404);exit;} header('Content-Type: image/jpeg'); header('Cache-Control: private, max-age=86400'); readfile($file); exit;
+        $user=self::user(); if(!$user || !$user['organization_id']) { http_response_code(403); exit; } $org=self::one('SELECT logo_filename FROM organizations WHERE id=?',[(int)$user['organization_id']]); $file=$org ? self::storagePath('logos/' . $org['logo_filename']) : ''; if(!$file || !is_file($file)){http_response_code(404);exit;} $mime=(new finfo(FILEINFO_MIME_TYPE))->file($file) ?: 'image/jpeg'; header('Content-Type: ' . $mime); header('Cache-Control: private, max-age=86400'); readfile($file); exit;
     }
 
     private static function layout(string $title, string $surface, array $user, callable $content): void
@@ -528,6 +535,8 @@ function calc(){let net=0,tax=0;document.querySelectorAll('.position-row').forEa
 if(add&&template&&rows)add.addEventListener('click',()=>{rows.append(template.content.cloneNode(true));calc()});document.addEventListener('input',calc);document.addEventListener('change',calc);document.addEventListener('click',event=>{if(event.target.closest('.remove-row')){const row=event.target.closest('.position-row');if(document.querySelectorAll('.position-row').length>1)row.remove();calc()}});calc();
 const customerPicker=document.querySelector('#customer-picker');
 if(customerPicker)customerPicker.addEventListener('change',()=>{const option=customerPicker.options[customerPicker.selectedIndex];const fields={name:'customer-name',email:'customer-email',street:'customer-street',postal:'customer-postal',city:'customer-city',country:'customer-country'};Object.entries(fields).forEach(([key,id])=>{const field=document.querySelector('#'+id);if(field)field.value=option.dataset[key]||''});if(!customerPicker.value){const country=document.querySelector('#customer-country');if(country&&!country.value)country.value='Deutschland'}});
+const designSelect=document.querySelector('select[name="template_key"]');
+if(designSelect){const designs=[['classic','Classic','Klar, ruhig und ausgewogen'],['minimal','Minimal','Viel Weißraum, feine Linien'],['bold','Bold','Kräftige Flächen und Kontrast'],['editorial','Editorial','Magazin-Look mit Akzent'],['mono','Mono','Schwarzweiß und sehr reduziert']];designs.forEach(([value,label,copy])=>{if(!designSelect.querySelector('option[value="'+value+'"]'))designSelect.insertAdjacentHTML('beforeend','<option value="'+value+'">'+label+' · '+copy+'</option>')});const picker=document.createElement('div');picker.className='design-picker';picker.innerHTML=designs.map(([value,label,copy])=>'<button type="button" class="design-choice design-'+value+'" data-design="'+value+'"><span class="design-swatch"></span><b>'+label+'</b><small>'+copy+'</small></button>').join('');designSelect.closest('label')?.insertAdjacentElement('afterend',picker);const sync=()=>{picker.querySelectorAll('[data-design]').forEach(button=>button.classList.toggle('is-selected',button.dataset.design===designSelect.value))};picker.addEventListener('click',event=>{const button=event.target.closest('[data-design]');if(button){designSelect.value=button.dataset.design;sync()}});sync()}
 JS; }
 
     private static function styles(): string { return <<<'CSS'
@@ -596,6 +605,7 @@ body{background:radial-gradient(circle at 88% -10%,color-mix(in srgb,var(--accen
   body.invoice .table-card tbody td.empty{display:block;grid-column:1/-1;padding:25px!important}
   body.invoice .invoice-actions{display:flex;flex-wrap:wrap;gap:10px}
 }
+.design-picker{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin:12px 0 18px}.design-choice{display:grid;gap:7px;min-height:108px;padding:10px;text-align:left;border:1px solid #17161426;border-radius:12px;background:#fff;color:var(--ink);cursor:pointer}.design-choice:hover,.design-choice.is-selected{border-color:var(--accent);box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 18%,transparent);transform:translateY(-2px)}.design-swatch{display:block;height:38px;border-radius:7px;background:linear-gradient(135deg,#f0eee8 0 64%,#171614 64% 72%,var(--accent) 72%)}.design-minimal .design-swatch{background:linear-gradient(#fff,#fff);border:1px solid #d0cbc2}.design-bold .design-swatch{background:linear-gradient(135deg,var(--accent) 0 52%,#171614 52%)}.design-editorial .design-swatch{background:linear-gradient(135deg,#171614 0 45%,var(--accent) 45% 68%,#f0eee8 68%)}.design-mono .design-swatch{background:linear-gradient(135deg,#171614 0 30%,#bdbdbd 30% 66%,#fff 66%)}.design-choice b{font-size:11px}.design-choice small{color:var(--muted);font-size:9px;line-height:1.3}@media(max-width:900px){.design-picker{grid-template-columns:repeat(3,minmax(0,1fr))}}@media(max-width:540px){.design-picker{grid-template-columns:repeat(2,minmax(0,1fr))}}
 CSS; }
 }
 
