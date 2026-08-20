@@ -76,7 +76,7 @@ final class PrachtSuite
             'CREATE TABLE IF NOT EXISTS organizations (id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY, name VARCHAR(190) NOT NULL, email VARCHAR(190) NULL, street VARCHAR(190) NULL, postal_code VARCHAR(30) NULL, city VARCHAR(100) NULL, country VARCHAR(80) NULL DEFAULT "Deutschland", tax_number VARCHAR(80) NULL, vat_id VARCHAR(80) NULL, iban VARCHAR(80) NULL, bic VARCHAR(80) NULL, logo_filename VARCHAR(190) NULL, accent_color VARCHAR(12) NOT NULL DEFAULT "#fa5139", template_key VARCHAR(40) NOT NULL DEFAULT "classic", invoice_prefix VARCHAR(30) NOT NULL DEFAULT "RE", invoice_counter INT UNSIGNED NOT NULL DEFAULT 0, created_at DATETIME NOT NULL, updated_at DATETIME NULL) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4',
             'CREATE TABLE IF NOT EXISTS users (id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY, organization_id INT UNSIGNED NULL, name VARCHAR(190) NOT NULL, email VARCHAR(190) NOT NULL UNIQUE, password_hash VARCHAR(255) NOT NULL, role VARCHAR(30) NOT NULL DEFAULT "invoice_user", is_active TINYINT(1) NOT NULL DEFAULT 1, must_change_password TINYINT(1) NOT NULL DEFAULT 1, created_at DATETIME NOT NULL, last_login_at DATETIME NULL, INDEX(organization_id), CONSTRAINT fk_users_org FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4',
             'CREATE TABLE IF NOT EXISTS customers (id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY, organization_id INT UNSIGNED NOT NULL, name VARCHAR(190) NOT NULL, email VARCHAR(190) NULL, street VARCHAR(190) NULL, postal_code VARCHAR(30) NULL, city VARCHAR(100) NULL, country VARCHAR(80) NULL DEFAULT "Deutschland", created_at DATETIME NOT NULL, updated_at DATETIME NULL, INDEX(organization_id), CONSTRAINT fk_customers_org FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4',
-            'CREATE TABLE IF NOT EXISTS invoices (id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY, organization_id INT UNSIGNED NOT NULL, customer_id INT UNSIGNED NULL, invoice_number VARCHAR(100) NULL UNIQUE, status VARCHAR(20) NOT NULL DEFAULT "draft", issue_date DATE NOT NULL, service_date DATE NULL, due_date DATE NULL, currency CHAR(3) NOT NULL DEFAULT "EUR", note TEXT NULL, footer TEXT NULL, net_total DECIMAL(13,2) NOT NULL DEFAULT 0, tax_total DECIMAL(13,2) NOT NULL DEFAULT 0, gross_total DECIMAL(13,2) NOT NULL DEFAULT 0, snapshot LONGTEXT NULL, pdf_filename VARCHAR(190) NULL, pdf_hash VARCHAR(128) NULL, issued_at DATETIME NULL, created_at DATETIME NOT NULL, updated_at DATETIME NULL, INDEX(organization_id), INDEX(customer_id), INDEX(status), CONSTRAINT fk_invoices_org FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE, CONSTRAINT fk_invoices_customer FOREIGN KEY (customer_id) REFERENCES customers(id) ON DELETE SET NULL) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4',
+            'CREATE TABLE IF NOT EXISTS invoices (id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY, organization_id INT UNSIGNED NOT NULL, customer_id INT UNSIGNED NULL, invoice_number VARCHAR(100) NULL UNIQUE, status VARCHAR(20) NOT NULL DEFAULT "draft", issue_date DATE NOT NULL, service_date DATE NULL, due_date DATE NULL, currency CHAR(3) NOT NULL DEFAULT "EUR", note TEXT NULL, footer TEXT NULL, net_total DECIMAL(13,2) NOT NULL DEFAULT 0, tax_total DECIMAL(13,2) NOT NULL DEFAULT 0, gross_total DECIMAL(13,2) NOT NULL DEFAULT 0, snapshot LONGTEXT NULL, pdf_filename VARCHAR(190) NULL, pdf_hash VARCHAR(128) NULL, issued_at DATETIME NULL, created_at DATETIME NOT NULL, updated_at DATETIME NULL, deleted_at DATETIME NULL, deleted_by INT UNSIGNED NULL, INDEX(organization_id), INDEX(customer_id), INDEX(status), INDEX(deleted_at), CONSTRAINT fk_invoices_org FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE, CONSTRAINT fk_invoices_customer FOREIGN KEY (customer_id) REFERENCES customers(id) ON DELETE SET NULL) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4',
             'CREATE TABLE IF NOT EXISTS invoice_items (id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY, invoice_id INT UNSIGNED NOT NULL, position_no INT UNSIGNED NOT NULL, title VARCHAR(500) NOT NULL, quantity DECIMAL(13,3) NOT NULL DEFAULT 1, unit_price DECIMAL(13,2) NOT NULL DEFAULT 0, tax_rate DECIMAL(5,2) NOT NULL DEFAULT 19, net_total DECIMAL(13,2) NOT NULL DEFAULT 0, tax_total DECIMAL(13,2) NOT NULL DEFAULT 0, gross_total DECIMAL(13,2) NOT NULL DEFAULT 0, INDEX(invoice_id), CONSTRAINT fk_items_invoice FOREIGN KEY (invoice_id) REFERENCES invoices(id) ON DELETE CASCADE) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4',
             'CREATE TABLE IF NOT EXISTS audit_logs (id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, organization_id INT UNSIGNED NULL, user_id INT UNSIGNED NULL, event VARCHAR(120) NOT NULL, context_json TEXT NULL, created_at DATETIME NOT NULL, INDEX(organization_id), INDEX(user_id), INDEX(created_at)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4',
         ];
@@ -158,6 +158,9 @@ final class PrachtSuite
         if ($action === 'save_customer') { self::saveCustomer($orgId); self::audit($orgId, (int) $user['id'], 'customer_saved'); self::flash('Kunde gespeichert.'); return; }
         if ($action === 'save_invoice' || $action === 'issue_invoice') { $id = self::saveInvoice($orgId, (int) $user['id'], $action === 'issue_invoice'); self::flash($action === 'issue_invoice' ? 'Rechnung wurde final ausgestellt und als PDF gespeichert.' : 'Entwurf gespeichert.'); self::redirect('view=documents&focus=' . $id); }
         if ($action === 'delete_invoice') { self::deleteDraftInvoice($orgId, (int) $user['id'], (int) ($_POST['invoice_id'] ?? 0)); self::flash('Entwurf wurde gelöscht.'); return; }
+        if ($action === 'trash_invoice') { self::trashInvoice($orgId, (int) $user['id'], (int) ($_POST['invoice_id'] ?? 0)); self::flash('Rechnung wurde in den Papierkorb verschoben.'); return; }
+        if ($action === 'restore_invoice') { self::restoreInvoice($orgId, (int) $user['id'], (int) ($_POST['invoice_id'] ?? 0)); self::flash('Rechnung wurde wiederhergestellt.'); return; }
+        if ($action === 'purge_invoice') { self::purgeInvoice($orgId, (int) $user['id'], (int) ($_POST['invoice_id'] ?? 0)); self::flash('Rechnung wurde endgültig gelöscht.'); return; }
         if ($action === 'copy_invoice') { $id = self::copyInvoiceToDraft($orgId, (int) $user['id'], (int) ($_POST['invoice_id'] ?? 0)); self::flash('Bearbeitbare Kopie wurde als Entwurf angelegt.'); self::redirect('view=new&id=' . $id); }
         if ($action === 'change_password') { $current = (string) ($_POST['current_password'] ?? ''); $next = (string) ($_POST['new_password'] ?? ''); if (!password_verify($current, $user['password_hash']) || strlen($next) < 12) throw new RuntimeException('Aktuelles Passwort prüfen; das neue Passwort braucht mindestens 12 Zeichen.'); self::exec('UPDATE users SET password_hash = ?, must_change_password = 0 WHERE id = ?', [password_hash($next, PASSWORD_ARGON2ID), $user['id']]); self::flash('Passwort geändert.'); return; }
         throw new RuntimeException('Unbekannte Aktion.');
@@ -193,9 +196,10 @@ final class PrachtSuite
 
     private static function controlPage(array $user): void
     {
+        self::ensureInvoiceTrash();
         self::ensureControlTables();
-        $organizations = self::all('SELECT o.*, (SELECT COUNT(*) FROM users u WHERE u.organization_id = o.id AND u.is_active = 1) AS active_users, (SELECT COUNT(*) FROM invoices i WHERE i.organization_id = o.id AND i.status = "issued") AS invoice_count, COALESCE((SELECT SUM(i.net_total) FROM invoices i WHERE i.organization_id = o.id AND i.status = "issued" AND YEAR(i.issue_date) = YEAR(CURDATE()) AND MONTH(i.issue_date) = MONTH(CURDATE())), 0) AS month_net, COALESCE((SELECT SUM(i.gross_total) FROM invoices i WHERE i.organization_id = o.id AND i.status = "issued" AND YEAR(i.issue_date) = YEAR(CURDATE()) AND MONTH(i.issue_date) = MONTH(CURDATE())), 0) AS month_gross, (SELECT MAX(i.issued_at) FROM invoices i WHERE i.organization_id = o.id AND i.status = "issued") AS last_invoice FROM organizations o ORDER BY o.created_at DESC');
-        $totals = self::one('SELECT COUNT(*) AS invoices, COALESCE(SUM(net_total),0) AS net, COALESCE(SUM(gross_total),0) AS gross FROM invoices WHERE status = "issued" AND YEAR(issue_date) = YEAR(CURDATE()) AND MONTH(issue_date) = MONTH(CURDATE())');
+        $organizations = self::all('SELECT o.*, (SELECT COUNT(*) FROM users u WHERE u.organization_id = o.id AND u.is_active = 1) AS active_users, (SELECT COUNT(*) FROM invoices i WHERE i.organization_id = o.id AND i.status = "issued" AND i.deleted_at IS NULL) AS invoice_count, COALESCE((SELECT SUM(i.net_total) FROM invoices i WHERE i.organization_id = o.id AND i.status = "issued" AND i.deleted_at IS NULL AND YEAR(i.issue_date) = YEAR(CURDATE()) AND MONTH(i.issue_date) = MONTH(CURDATE())), 0) AS month_net, COALESCE((SELECT SUM(i.gross_total) FROM invoices i WHERE i.organization_id = o.id AND i.status = "issued" AND i.deleted_at IS NULL AND YEAR(i.issue_date) = YEAR(CURDATE()) AND MONTH(i.issue_date) = MONTH(CURDATE())), 0) AS month_gross, (SELECT MAX(i.issued_at) FROM invoices i WHERE i.organization_id = o.id AND i.status = "issued" AND i.deleted_at IS NULL) AS last_invoice FROM organizations o ORDER BY o.created_at DESC');
+        $totals = self::one('SELECT COUNT(*) AS invoices, COALESCE(SUM(net_total),0) AS net, COALESCE(SUM(gross_total),0) AS gross FROM invoices WHERE status = "issued" AND deleted_at IS NULL AND YEAR(issue_date) = YEAR(CURDATE()) AND MONTH(issue_date) = MONTH(CURDATE())');
         $users = self::all('SELECT u.*, o.name AS organization_name FROM users u LEFT JOIN organizations o ON o.id = u.organization_id WHERE u.role != "super_admin" ORDER BY u.created_at DESC');
         $sites = self::all('SELECT s.*, COALESCE((SELECT SUM(t.page_views) FROM control_traffic t WHERE t.site_id=s.id AND t.traffic_date>=DATE_SUB(CURDATE(),INTERVAL 30 DAY)),0) AS traffic_30, COALESCE((SELECT SUM(t.contact_events) FROM control_traffic t WHERE t.site_id=s.id AND t.traffic_date>=DATE_SUB(CURDATE(),INTERVAL 30 DAY)),0) AS contacts_30 FROM control_sites s ORDER BY s.created_at DESC');
         $tasks = self::all('SELECT t.*,s.name AS site_name FROM control_tasks t LEFT JOIN control_sites s ON s.id=t.site_id ORDER BY FIELD(t.status,"offen","erledigt"), FIELD(t.priority,"dringend","normal","niedrig"),t.due_date IS NULL,t.due_date ASC,t.created_at DESC LIMIT 12');
@@ -219,6 +223,8 @@ final class PrachtSuite
     private static function invoicePage(array $user): void
     {
         $orgId = (int) $user['organization_id'];
+        self::ensureInvoiceTrash();
+        self::purgeExpiredInvoiceTrash($orgId);
         $org = self::one('SELECT * FROM organizations WHERE id = ?', [$orgId]);
         if (!$org) { self::messagePage('Mandant nicht gefunden', 'Bitte wende dich an Pracht Performance.'); return; }
         $view = (string) ($_GET['view'] ?? 'dashboard');
@@ -230,6 +236,7 @@ final class PrachtSuite
             <main class="portal-main"><?= self::flashHtml() ?><?php
                 if ($view === 'new') self::invoiceForm($org, $orgId);
                 elseif ($view === 'documents') self::documentsPage($org, $orgId);
+                elseif ($view === 'trash') self::trashPage($orgId);
                 elseif ($view === 'customers') self::customersPage($orgId);
                 elseif ($view === 'settings') self::settingsPage($org, $user);
                 else self::invoiceDashboard($org, $orgId);
@@ -239,8 +246,8 @@ final class PrachtSuite
 
     private static function invoiceDashboard(array $org, int $orgId): void
     {
-        $month = self::one('SELECT COUNT(*) AS count, COALESCE(SUM(net_total),0) AS net, COALESCE(SUM(gross_total),0) AS gross FROM invoices WHERE organization_id = ? AND status = "issued" AND YEAR(issue_date)=YEAR(CURDATE()) AND MONTH(issue_date)=MONTH(CURDATE())', [$orgId]);
-        $latest = self::all('SELECT i.*, c.name AS customer_name FROM invoices i LEFT JOIN customers c ON c.id=i.customer_id WHERE i.organization_id=? ORDER BY i.created_at DESC LIMIT 6', [$orgId]); ?>
+        $month = self::one('SELECT COUNT(*) AS count, COALESCE(SUM(net_total),0) AS net, COALESCE(SUM(gross_total),0) AS gross FROM invoices WHERE organization_id = ? AND status = "issued" AND deleted_at IS NULL AND YEAR(issue_date)=YEAR(CURDATE()) AND MONTH(issue_date)=MONTH(CURDATE())', [$orgId]);
+        $latest = self::all('SELECT i.*, c.name AS customer_name FROM invoices i LEFT JOIN customers c ON c.id=i.customer_id WHERE i.organization_id=? AND i.deleted_at IS NULL ORDER BY i.created_at DESC LIMIT 6', [$orgId]); ?>
         <section class="invoice-hero"><div><p class="eyebrow">Dein Rechnungsportal</p><h1>Guten Tag,<br><em><?= self::e($org['name']) ?>.</em></h1><p>Erstelle professionelle Rechnungen, speichere sie sicher und lade sie als PDF herunter.</p></div><a class="button" href="?view=new">Neue Rechnung <b>↗</b></a></section>
         <section class="metrics"><article><span>Rechnungen / Monat</span><strong><?= (int) $month['count'] ?></strong><small>final ausgestellt</small></article><article><span>Netto / Monat</span><strong><?= self::money($month['net']) ?></strong><small>ohne Umsatzsteuer</small></article><article><span>Brutto / Monat</span><strong><?= self::money($month['gross']) ?></strong><small>inklusive Umsatzsteuer</small></article><article><span>Vorlagenstatus</span><strong><?= $org['logo_filename'] ? '✓' : '—' ?></strong><small><?= $org['logo_filename'] ? 'Logo hinterlegt' : 'Logo noch hinterlegen' ?></small></article></section>
         <section class="grid two"><article class="card accent"><p class="eyebrow">Schnellstart</p><h2>In wenigen<br><em>Schritten fertig.</em></h2><ol class="steps"><li><b>01</b> Rechnungsempfänger auswählen</li><li><b>02</b> Leistungen und Beträge eintragen</li><li><b>03</b> Prüfen, finalisieren und Ansicht öffnen</li></ol><a class="button light" href="?view=new">Rechnung erstellen <b>↗</b></a></article><article class="card"><p class="eyebrow">Dein Auftritt</p><h2>Logo & Vorlage<br>einmal <em>einrichten.</em></h2><p class="card-copy">Deine Rechnungen verwenden danach automatisch Firmenangaben, Bankverbindung, Farbe, Logo und Fußzeile.</p><a class="text-link" href="?view=settings">Vorlage einrichten ↗</a></article></section>
@@ -278,9 +285,16 @@ final class PrachtSuite
 
     private static function documentsPage(array $org, int $orgId): void
     {
-        $invoices = self::all('SELECT i.*, c.name AS customer_name FROM invoices i LEFT JOIN customers c ON c.id=i.customer_id WHERE i.organization_id=? ORDER BY i.created_at DESC', [$orgId]); ?>
-        <section class="page-head"><div><p class="eyebrow">Dokumente</p><h1>Deine<br><em>Rechnungen.</em></h1></div><a class="button" href="?view=new">Neue Rechnung <b>↗</b></a></section>
-        <section class="card table-card"><div class="table scroll"><table><thead><tr><th>Nummer</th><th>Empfänger</th><th>Rechnungsdatum</th><th>Netto</th><th>Brutto</th><th>Status</th><th>Aktionen</th></tr></thead><tbody><?php foreach ($invoices as $invoice): ?><tr id="invoice-<?= (int) $invoice['id'] ?>"><td><b><?= self::e($invoice['invoice_number'] ?: 'Entwurf') ?></b></td><td><?= self::e($invoice['customer_name'] ?: '—') ?></td><td><?= self::date($invoice['issue_date']) ?></td><td><?= self::money($invoice['net_total']) ?></td><td><?= self::money($invoice['gross_total']) ?></td><td><span class="status <?= $invoice['status'] === 'issued' ? 'ok' : 'draft' ?>"><?= $invoice['status'] === 'issued' ? 'Ausgestellt' : 'Entwurf' ?></span></td><td class="invoice-actions"><?php if ($invoice['status'] === 'issued'): ?><a class="icon-link" target="_blank" href="index.php?view=preview&id=<?= (int) $invoice['id'] ?>">Ansicht ↗</a><form method="post"><input type="hidden" name="csrf" value="<?= self::csrf() ?>"><input type="hidden" name="return_to" value="view=documents"><input type="hidden" name="invoice_id" value="<?= (int) $invoice['id'] ?>"><button class="link-button" name="action" value="copy_invoice">Bearbeitbare Kopie</button></form><?php else: ?><a class="icon-link" href="?view=new&id=<?= (int) $invoice['id'] ?>">Bearbeiten ↗</a><form method="post" onsubmit="return confirm('Diesen Entwurf wirklich löschen?');"><input type="hidden" name="csrf" value="<?= self::csrf() ?>"><input type="hidden" name="return_to" value="view=documents"><input type="hidden" name="invoice_id" value="<?= (int) $invoice['id'] ?>"><button class="link-button danger" name="action" value="delete_invoice">Entwurf löschen</button></form><?php endif; ?></td></tr><?php endforeach; if (!$invoices): ?><tr><td colspan="7" class="empty">Noch keine Rechnungen angelegt.</td></tr><?php endif; ?></tbody></table></div></section>
+        $invoices = self::all('SELECT i.*, c.name AS customer_name FROM invoices i LEFT JOIN customers c ON c.id=i.customer_id WHERE i.organization_id=? AND i.deleted_at IS NULL ORDER BY i.created_at DESC', [$orgId]); $trashCount = (int) (self::one('SELECT COUNT(*) AS count FROM invoices WHERE organization_id=? AND deleted_at IS NOT NULL', [$orgId])['count'] ?? 0); ?>
+        <section class="page-head"><div><p class="eyebrow">Dokumente</p><h1>Deine<br><em>Rechnungen.</em></h1></div><div class="doc-actions"><a class="ghost" href="?view=trash">Papierkorb<?= $trashCount ? ' (' . $trashCount . ')' : '' ?> ↗</a><a class="button" href="?view=new">Neue Rechnung <b>↗</b></a></div></section>
+        <section class="card table-card"><div class="table scroll"><table><thead><tr><th>Nummer</th><th>Empfänger</th><th>Rechnungsdatum</th><th>Netto</th><th>Brutto</th><th>Status</th><th>Aktionen</th></tr></thead><tbody><?php foreach ($invoices as $invoice): ?><tr id="invoice-<?= (int) $invoice['id'] ?>"><td><b><?= self::e($invoice['invoice_number'] ?: 'Entwurf') ?></b></td><td><?= self::e($invoice['customer_name'] ?: '—') ?></td><td><?= self::date($invoice['issue_date']) ?></td><td><?= self::money($invoice['net_total']) ?></td><td><?= self::money($invoice['gross_total']) ?></td><td><span class="status <?= $invoice['status'] === 'issued' ? 'ok' : 'draft' ?>"><?= $invoice['status'] === 'issued' ? 'Ausgestellt' : 'Entwurf' ?></span></td><td class="invoice-actions"><?php if ($invoice['status'] === 'issued'): ?><a class="icon-link" target="_blank" href="index.php?view=preview&id=<?= (int) $invoice['id'] ?>">Ansicht ↗</a><form method="post"><input type="hidden" name="csrf" value="<?= self::csrf() ?>"><input type="hidden" name="return_to" value="view=documents"><input type="hidden" name="invoice_id" value="<?= (int) $invoice['id'] ?>"><button class="link-button" name="action" value="copy_invoice">Bearbeitbare Kopie</button></form><form method="post" onsubmit="return confirm('Diese ausgestellte Rechnung für 60 Tage in den Papierkorb verschieben?');"><input type="hidden" name="csrf" value="<?= self::csrf() ?>"><input type="hidden" name="return_to" value="view=documents"><input type="hidden" name="invoice_id" value="<?= (int) $invoice['id'] ?>"><button class="link-button danger" name="action" value="trash_invoice">In Papierkorb</button></form><?php else: ?><a class="icon-link" href="?view=new&id=<?= (int) $invoice['id'] ?>">Bearbeiten ↗</a><form method="post" onsubmit="return confirm('Diesen Entwurf wirklich löschen?');"><input type="hidden" name="csrf" value="<?= self::csrf() ?>"><input type="hidden" name="return_to" value="view=documents"><input type="hidden" name="invoice_id" value="<?= (int) $invoice['id'] ?>"><button class="link-button danger" name="action" value="delete_invoice">Entwurf löschen</button></form><?php endif; ?></td></tr><?php endforeach; if (!$invoices): ?><tr><td colspan="7" class="empty">Noch keine Rechnungen angelegt.</td></tr><?php endif; ?></tbody></table></div></section>
+    <?php }
+
+    private static function trashPage(int $orgId): void
+    {
+        $invoices = self::all('SELECT i.*, c.name AS customer_name FROM invoices i LEFT JOIN customers c ON c.id=i.customer_id WHERE i.organization_id=? AND i.deleted_at IS NOT NULL ORDER BY i.deleted_at DESC', [$orgId]); ?>
+        <section class="page-head"><div><p class="eyebrow">Rechnungen · Papierkorb</p><h1>Gelöschte<br><em>Belege.</em></h1><p class="page-copy">Ausgestellte Rechnungen bleiben 60 Tage im Papierkorb und werden danach automatisch endgültig gelöscht.</p></div><a class="ghost" href="?view=documents">Zurück zu Rechnungen ↗</a></section>
+        <section class="card table-card"><div class="table scroll"><table><thead><tr><th>Nummer</th><th>Empfänger</th><th>Gelöscht am</th><th>Verbleibend</th><th>Aktionen</th></tr></thead><tbody><?php foreach ($invoices as $invoice): $deletedAt = strtotime((string) $invoice['deleted_at']); $daysLeft = $deletedAt ? max(0, 60 - (int) floor((time() - $deletedAt) / 86400)) : 0; ?><tr><td><b><?= self::e($invoice['invoice_number'] ?: 'Rechnung') ?></b><small><?= self::money($invoice['gross_total']) ?></small></td><td><?= self::e($invoice['customer_name'] ?: '—') ?></td><td><?= self::date($invoice['deleted_at']) ?></td><td><span class="status <?= $daysLeft <= 7 ? 'draft' : 'ok' ?>"><?= $daysLeft ?> Tage</span></td><td class="invoice-actions"><form method="post"><input type="hidden" name="csrf" value="<?= self::csrf() ?>"><input type="hidden" name="return_to" value="view=trash"><input type="hidden" name="invoice_id" value="<?= (int) $invoice['id'] ?>"><button class="link-button" name="action" value="restore_invoice">Wiederherstellen</button></form><form method="post" onsubmit="return confirm('Diese Rechnung endgültig löschen? Dieser Schritt kann nicht rückgängig gemacht werden.');"><input type="hidden" name="csrf" value="<?= self::csrf() ?>"><input type="hidden" name="return_to" value="view=trash"><input type="hidden" name="invoice_id" value="<?= (int) $invoice['id'] ?>"><button class="link-button danger" name="action" value="purge_invoice">Endgültig löschen</button></form></td></tr><?php endforeach; if (!$invoices): ?><tr><td colspan="5" class="empty">Der Papierkorb ist leer.</td></tr><?php endif; ?></tbody></table></div></section>
     <?php }
 
     private static function settingsPage(array $org, array $user): void
@@ -382,9 +396,64 @@ final class PrachtSuite
         self::audit($orgId, $userId, 'invoice_draft_deleted', ['invoice_id' => $invoiceId]);
     }
 
+    private static function ensureInvoiceTrash(): void
+    {
+        static $ready = false;
+        if ($ready) return;
+        $database = (string) self::$config['database']['name'];
+        $hasColumn = static function (string $column) use ($database): bool {
+            $row = self::one('SELECT COUNT(*) AS total FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=? AND TABLE_NAME="invoices" AND COLUMN_NAME=?', [$database, $column]);
+            return (int) ($row['total'] ?? 0) > 0;
+        };
+        if (!$hasColumn('deleted_at')) self::db()->exec('ALTER TABLE invoices ADD COLUMN deleted_at DATETIME NULL');
+        if (!$hasColumn('deleted_by')) self::db()->exec('ALTER TABLE invoices ADD COLUMN deleted_by INT UNSIGNED NULL');
+        $ready = true;
+    }
+
+    private static function trashInvoice(int $orgId, int $userId, int $invoiceId): void
+    {
+        self::ensureInvoiceTrash();
+        $invoice = self::one('SELECT id,status FROM invoices WHERE id=? AND organization_id=? AND deleted_at IS NULL', [$invoiceId, $orgId]);
+        if (!$invoice) throw new RuntimeException('Rechnung nicht gefunden oder bereits im Papierkorb.');
+        if ($invoice['status'] !== 'issued') throw new RuntimeException('Nur ausgestellte Rechnungen können in den Papierkorb verschoben werden.');
+        self::exec('UPDATE invoices SET deleted_at=NOW(),deleted_by=?,updated_at=NOW() WHERE id=? AND organization_id=? AND deleted_at IS NULL', [$userId, $invoiceId, $orgId]);
+        self::audit($orgId, $userId, 'invoice_trashed', ['invoice_id' => $invoiceId, 'retention_days' => 60]);
+    }
+
+    private static function restoreInvoice(int $orgId, int $userId, int $invoiceId): void
+    {
+        self::ensureInvoiceTrash();
+        $invoice = self::one('SELECT id FROM invoices WHERE id=? AND organization_id=? AND deleted_at IS NOT NULL', [$invoiceId, $orgId]);
+        if (!$invoice) throw new RuntimeException('Rechnung nicht im Papierkorb gefunden.');
+        self::exec('UPDATE invoices SET deleted_at=NULL,deleted_by=NULL,updated_at=NOW() WHERE id=? AND organization_id=? AND deleted_at IS NOT NULL', [$invoiceId, $orgId]);
+        self::audit($orgId, $userId, 'invoice_restored', ['invoice_id' => $invoiceId]);
+    }
+
+    private static function purgeInvoice(int $orgId, int $userId, int $invoiceId): void
+    {
+        self::ensureInvoiceTrash();
+        $invoice = self::one('SELECT id FROM invoices WHERE id=? AND organization_id=? AND deleted_at IS NOT NULL', [$invoiceId, $orgId]);
+        if (!$invoice) throw new RuntimeException('Rechnung nicht im Papierkorb gefunden.');
+        self::deleteInvoicePermanently($orgId, $invoiceId);
+        self::audit($orgId, $userId, 'invoice_permanently_deleted', ['invoice_id' => $invoiceId]);
+    }
+
+    private static function purgeExpiredInvoiceTrash(int $orgId): void
+    {
+        $rows = self::all('SELECT id FROM invoices WHERE organization_id=? AND deleted_at IS NOT NULL AND deleted_at < DATE_SUB(NOW(), INTERVAL 60 DAY)', [$orgId]);
+        foreach ($rows as $row) self::deleteInvoicePermanently($orgId, (int) $row['id']);
+    }
+
+    private static function deleteInvoicePermanently(int $orgId, int $invoiceId): void
+    {
+        $path = self::storagePath('pdf/' . $orgId . '-' . $invoiceId . '.pdf');
+        if (is_file($path)) @unlink($path);
+        self::exec('DELETE FROM invoices WHERE id=? AND organization_id=? AND deleted_at IS NOT NULL', [$invoiceId, $orgId]);
+    }
+
     private static function copyInvoiceToDraft(int $orgId, int $userId, int $invoiceId): int
     {
-        $invoice = self::one('SELECT * FROM invoices WHERE id=? AND organization_id=?', [$invoiceId, $orgId]);
+        $invoice = self::one('SELECT * FROM invoices WHERE id=? AND organization_id=? AND deleted_at IS NULL', [$invoiceId, $orgId]);
         if (!$invoice) throw new RuntimeException('Rechnung nicht gefunden.');
         $items = self::all('SELECT * FROM invoice_items WHERE invoice_id=? ORDER BY position_no', [$invoiceId]);
         self::db()->beginTransaction();
@@ -400,7 +469,7 @@ final class PrachtSuite
 
     private static function generatePdf(int $orgId, int $invoiceId): string
     {
-        $invoice = self::one('SELECT * FROM invoices WHERE id=? AND organization_id=? AND status="issued"', [$invoiceId,$orgId]); if (!$invoice) throw new RuntimeException('Rechnung nicht gefunden.');
+        $invoice = self::one('SELECT * FROM invoices WHERE id=? AND organization_id=? AND status="issued" AND deleted_at IS NULL', [$invoiceId,$orgId]); if (!$invoice) throw new RuntimeException('Rechnung nicht gefunden.');
         $data = json_decode((string) $invoice['snapshot'], true);
         if (!is_array($data) || !isset($data['organization'], $data['customer'], $data['items'])) {
             $organization = self::one('SELECT * FROM organizations WHERE id=?', [$orgId]) ?: [];
@@ -457,7 +526,7 @@ final class PrachtSuite
 
     private static function downloadPdf(int $orgId, int $id): void
     {
-        $invoice = self::one('SELECT * FROM invoices WHERE id=? AND organization_id=? AND status="issued"',[$id,$orgId]); if (!$invoice) { http_response_code(404); self::messagePage('PDF nicht gefunden','Diese Rechnung steht nicht zur Verfügung.'); return; }
+        $invoice = self::one('SELECT * FROM invoices WHERE id=? AND organization_id=? AND status="issued" AND deleted_at IS NULL',[$id,$orgId]); if (!$invoice) { http_response_code(404); self::messagePage('PDF nicht gefunden','Diese Rechnung steht nicht zur Verfügung.'); return; }
         try {
             $path=self::storagePath('pdf/' . $orgId . '-' . $id . '.pdf'); $generated = self::generatePdf($orgId,$id); if ($generated === '' && !is_file($path)) throw new RuntimeException('PDF konnte nicht erzeugt werden.');
         } catch (Throwable $error) {
@@ -472,14 +541,14 @@ final class PrachtSuite
 
     private static function invoicePreviewExact(int $orgId, int $id, array $org): void
     {
-        $invoice = self::one('SELECT id,invoice_number FROM invoices WHERE id=? AND organization_id=? AND status="issued"', [$id, $orgId]);
+        $invoice = self::one('SELECT id,invoice_number FROM invoices WHERE id=? AND organization_id=? AND status="issued" AND deleted_at IS NULL', [$id, $orgId]);
         if (!$invoice) { self::messagePage('Nicht verfügbar', 'Nur final ausgestellte Rechnungen können angezeigt werden.'); return; }
         ?><!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title><?= self::e($invoice['invoice_number']) ?></title><style>html,body{height:100%;margin:0;background:#e9e7e1;color:#171614;font:14px Arial,sans-serif}.preview-bar{position:fixed;z-index:2;inset:0 0 auto;display:flex;justify-content:flex-end;padding:18px;background:#e9e7e1cc;backdrop-filter:blur(12px)}.preview-bar a{padding:11px 15px;background:#171614;color:#fff;font-weight:700;text-decoration:none}.preview-frame{position:absolute;inset:72px 0 0;border:0;width:100%;height:calc(100% - 72px);background:#e9e7e1}</style></head><body><div class="preview-bar"><a href="?action=download_pdf&amp;id=<?= (int) $invoice['id'] ?>">PDF herunterladen &amp; drucken</a></div><iframe class="preview-frame" title="PDF-Vorschau" src="?action=download_pdf&amp;id=<?= (int) $invoice['id'] ?>&amp;inline=1"></iframe></body></html><?php
     }
 
     private static function invoicePreview(int $orgId, int $id, array $org): void
     {
-        $invoice = self::one('SELECT i.*, c.name AS customer_name,c.street AS customer_street,c.postal_code AS customer_postal,c.city AS customer_city,c.country AS customer_country FROM invoices i LEFT JOIN customers c ON c.id=i.customer_id WHERE i.id=? AND i.organization_id=? AND i.status="issued"',[$id,$orgId]);
+        $invoice = self::one('SELECT i.*, c.name AS customer_name,c.street AS customer_street,c.postal_code AS customer_postal,c.city AS customer_city,c.country AS customer_country FROM invoices i LEFT JOIN customers c ON c.id=i.customer_id WHERE i.id=? AND i.organization_id=? AND i.status="issued" AND i.deleted_at IS NULL',[$id,$orgId]);
         if (!$invoice) { self::messagePage('Nicht verfügbar','Nur final ausgestellte Rechnungen können angezeigt werden.'); return; }
         $items = self::all('SELECT * FROM invoice_items WHERE invoice_id=? ORDER BY position_no',[$id]); ?>
         <!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title><?= self::e($invoice['invoice_number']) ?></title><style>body{margin:0;background:#e9e7e1;color:#171614;font:14px Arial,sans-serif}.action{position:fixed;top:18px;right:18px;padding:11px 15px;background:#171614;color:#fff;font-weight:700;text-decoration:none}.paper{box-sizing:border-box;width:210mm;min-height:297mm;margin:20px auto;padding:19mm;background:#fff;box-shadow:0 8px 40px #0002}.top{display:flex;justify-content:space-between;border-bottom:1.5px solid <?= self::e($org['accent_color']) ?>;padding-bottom:8mm}.logo{max-width:48mm;max-height:20mm;object-fit:contain}.k{font-size:8px;letter-spacing:.12em;text-transform:uppercase;color:#777}.number{font-size:29px;margin:22mm 0 5mm}.meta{display:grid;grid-template-columns:repeat(3,1fr);gap:5mm;margin:4mm 0 10mm;font-size:10px}.meta span{padding:3mm;background:#f0eee8}.addresses{display:grid;grid-template-columns:1fr 1fr;gap:30mm;margin:13mm 0;font-size:11px;line-height:1.5}table{width:100%;border-collapse:collapse;font-size:10px}th{padding:3mm;text-align:left;background:#171614;color:#fff;font-size:8px;letter-spacing:.08em}td{padding:3mm;border-bottom:1px solid #ddd}.num{text-align:right}.total{width:75mm;margin:8mm 0 0 auto;font-size:10px}.total div{display:flex;justify-content:space-between;padding:2.5mm}.total b{background:<?= self::e($org['accent_color']) ?>;padding:3mm;margin-top:2mm}.foot{position:fixed;bottom:16mm;display:grid;grid-template-columns:1.2fr 1fr 1fr;gap:8mm;font-size:8px;color:#555;border-top:1px solid #ddd;padding-top:4mm;width:172mm;line-height:1.4}@media(max-width:800px){.action{position:static;display:inline-block;margin:12px}.paper{width:100%;min-height:0;margin:0;padding:24px}.foot{position:static;width:auto;margin-top:50px}.addresses{gap:20px}.number{margin-top:45px}}</style></head><body><a class="action" href="?view=pdf&id=<?= (int) $invoice['id'] ?>">PDF herunterladen &amp; drucken</a><div class="paper"><div class="top"><div><p class="k">Rechnung</p><h2><?= self::e($org['name']) ?></h2></div><?php if($org['logo_filename']): ?><img class="logo" src="?action=asset" alt="Logo"><?php endif; ?></div><div class="addresses"><div><p class="k">Rechnungsempfänger</p><b><?= self::e($invoice['customer_name']) ?></b><br><?= self::e($invoice['customer_street']) ?><br><?= self::e($invoice['customer_postal']) ?> <?= self::e($invoice['customer_city']) ?><br><?= self::e($invoice['customer_country']) ?></div><div><?= nl2br(self::e(trim(($org['street']??'').'\n'.($org['postal_code']??'').' '.($org['city']??'')))) ?><br><?= self::e($org['email']) ?></div></div><h1 class="number">Rechnung</h1><div class="meta"><span>Nr.<br><b><?= self::e($invoice['invoice_number']) ?></b></span><span>Datum<br><b><?= self::date($invoice['issue_date']) ?></b></span><span>Zahlbar bis<br><b><?= self::date($invoice['due_date'] ?: $invoice['issue_date']) ?></b></span></div><table><thead><tr><th>Pos.</th><th>Beschreibung</th><th class="num">Einzelpreis</th><th class="num">Anzahl</th><th class="num">Gesamtpreis</th></tr></thead><tbody><?php foreach($items as $pos => $item): ?><tr><td><?= $pos + 1 ?></td><td><?= nl2br(self::e($item['title'])) ?></td><td class="num"><?= self::money($item['unit_price']) ?></td><td class="num"><?= self::decimal($item['quantity']) ?></td><td class="num"><?= self::money($item['net_total']) ?></td></tr><?php endforeach; ?></tbody></table><div class="total"><div><span>Nettobetrag</span><span><?= self::money($invoice['net_total']) ?></span></div><div><span>zzgl. MwSt.</span><span><?= self::money($invoice['tax_total']) ?></span></div><div><b>Gesamtbetrag</b><b><?= self::money($invoice['gross_total']) ?></b></div></div><?php if($invoice['note']): ?><p style="margin-top:16mm;font-size:10px"><b>Hinweis</b><br><?= nl2br(self::e($invoice['note'])) ?></p><?php endif; ?><div class="foot"><div><?= nl2br(self::e($invoice['footer'] ?: 'Vielen Dank für Ihr Vertrauen.')) ?></div><div>IBAN: <?= self::e($org['iban']) ?><br>BIC: <?= self::e($org['bic']) ?></div><div>Steuernummer: <?= self::e($org['tax_number']) ?><br>USt-IdNr.: <?= self::e($org['vat_id']) ?></div></div></div></body></html><?php
