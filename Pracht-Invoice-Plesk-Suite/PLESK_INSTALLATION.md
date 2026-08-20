@@ -18,6 +18,7 @@ Es werden **keine** Rechnungen per E-Mail gesendet und keine Mahnungen erstellt.
 
 1. `Pracht-Invoice-Plesk-Upload.zip` in das Basisverzeichnis hochladen und dort entpacken.
    Die vorhandenen Dateien in den beiden Subdomain-Ordnern dürfen überschrieben bzw. ergänzt werden.
+   Falls nach dem Entpacken noch eine Plesk-Standardseite erscheint: in den IIS-/Hosting-Einstellungen von beiden Subdomains `index.php` als Standarddokument ganz nach oben setzen oder eine vorhandene Standard-`index.html` entfernen.
 2. In `pracht-suite-core` die Datei `config.sample.php` kopieren und die Kopie in `config.php` umbenennen.
 3. `config.php` bearbeiten:
    - Datenbankname, Datenbanknutzer und Datenbankpasswort aus Plesk eintragen
