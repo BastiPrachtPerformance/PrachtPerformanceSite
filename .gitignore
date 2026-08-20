@@ -44,5 +44,6 @@ tsconfig.tsbuildinfo
 # local project exports and source archives
 /Pracht-Performance-Netlify-Upload*/
 /Pracht-Performance-Netlify-Upload*.zip
+/Pracht-Invoice-Plesk-Upload.zip
 /BisherigeSeite/
 /.codex-remote-attachments/
