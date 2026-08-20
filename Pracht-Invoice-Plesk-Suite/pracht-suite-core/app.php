@@ -430,17 +430,17 @@ final class PrachtSuite
         }
         $pdf = new PrachtInvoicePdf(); $page = $pdf->newPage(); $accent = self::hexRgb($data['organization']['accent_color'] ?? '#fa5139'); $ink = [0.08,0.08,0.07]; $muted = [0.42,0.40,0.36]; $rule = [0.78,0.76,0.71];
         $logo = self::storagePath('logos/' . ($data['organization']['logo_filename'] ?? ''));
-        if (is_file($logo)) $pdf->image($page, $logo, 42, 752, 145, 52); else { $pdf->text($page,42,782,18,(string)($data['organization']['name'] ?? 'Unternehmen'),$ink,'bold'); }
+        if (is_file($logo)) $pdf->image($page, $logo, 42, 728, 145, 52); else { $pdf->text($page,42,758,18,(string)($data['organization']['name'] ?? 'Unternehmen'),$ink,'bold'); }
         $sender = array_filter([$data['organization']['name'] ?? '', $data['organization']['street'] ?? '', trim(($data['organization']['postal_code'] ?? '') . ' ' . ($data['organization']['city'] ?? '')), !empty($data['organization']['email']) ? 'E-Mail: ' . $data['organization']['email'] : '']);
-        $pdf->rect($page,374,642,179,88,$rule); $pdf->block($page,386,714,$sender,8,$ink);
+        $pdf->rect($page,374,612,179,88,$rule); $pdf->block($page,386,684,$sender,8,$ink);
         $customer = array_filter([$data['customer']['name'] ?? '', $data['customer']['street'] ?? '', trim(($data['customer']['postal_code'] ?? '') . ' ' . ($data['customer']['city'] ?? '')), $data['customer']['country'] ?? '']);
-        $pdf->text($page,42,704,7,'RECHNUNGSEMPFÄNGER',$muted,'bold'); $pdf->rect($page,42,634,228,57,$rule); $pdf->block($page,50,680,$customer,9,$ink);
-        $pdf->text($page,42,596,24,'Rechnung',$ink,'bold');
-        $pdf->rect($page,42,557,511,24,$rule);
+        $pdf->text($page,42,678,7,'RECHNUNGSEMPFÄNGER',$muted,'bold'); $pdf->rect($page,42,608,228,57,$rule); $pdf->block($page,50,654,$customer,9,$ink);
+        $pdf->text($page,42,540,24,'Rechnung',$ink,'bold');
+        $pdf->rect($page,42,501,511,24,$rule);
         $meta = [['Rechnungs-Nr.', (string)$data['number']], ['Rechnungsdatum', self::date((string)$data['issue_date'])], ['Zahlbar bis', self::date((string)($data['due_date'] ?: $data['issue_date']))]];
-        foreach ($meta as $i => [$label,$value]) { $x=52+($i*166); $pdf->text($page,$x,570,6,$label,$muted,'bold'); $pdf->text($page,$x,560,8,$value,$ink); }
-        $pdf->text($page,42,530,8,'Leistungsdatum: ' . self::date((string)($data['service_date'] ?: $data['issue_date'])),$muted);
-        $y = 493; $pdf->rect($page,42,$y,511,23,$ink,true); $pdf->text($page,50,$y+8,7,'POS',[1,1,1],'bold'); $pdf->text($page,78,$y+8,7,'BESCHREIBUNG',[1,1,1],'bold'); $pdf->text($page,358,$y+8,7,'EINZELPREIS',[1,1,1],'bold'); $pdf->text($page,440,$y+8,7,'MENGE',[1,1,1],'bold'); $pdf->text($page,500,$y+8,7,'GESAMT',[1,1,1],'bold'); $y-=24;
+        foreach ($meta as $i => [$label,$value]) { $x=52+($i*166); $pdf->text($page,$x,514,6,$label,$muted,'bold'); $pdf->text($page,$x,504,8,$value,$ink); }
+        $pdf->text($page,42,474,8,'Leistungsdatum: ' . self::date((string)($data['service_date'] ?: $data['issue_date'])),$muted);
+        $y = 437; $pdf->rect($page,42,$y,511,23,$ink,true); $pdf->text($page,50,$y+8,7,'POS',[1,1,1],'bold'); $pdf->text($page,78,$y+8,7,'BESCHREIBUNG',[1,1,1],'bold'); $pdf->text($page,358,$y+8,7,'EINZELPREIS',[1,1,1],'bold'); $pdf->text($page,440,$y+8,7,'MENGE',[1,1,1],'bold'); $pdf->text($page,500,$y+8,7,'GESAMT',[1,1,1],'bold'); $y-=24;
         foreach ($data['items'] as $position => $item) {
             $titleLength = function_exists('mb_strlen') ? mb_strlen((string) $item['title']) : strlen((string) $item['title']); $lineCount=max(1,(int)ceil($titleLength/48)); $height=max(28,$lineCount*12+12);
             if ($y-$height < 190) { $page=$pdf->newPage(); $y=778; $pdf->rect($page,42,$y,511,23,$ink,true); $pdf->text($page,50,$y+8,7,'POS',[1,1,1],'bold'); $pdf->text($page,78,$y+8,7,'BESCHREIBUNG',[1,1,1],'bold'); $pdf->text($page,358,$y+8,7,'EINZELPREIS',[1,1,1],'bold'); $pdf->text($page,440,$y+8,7,'MENGE',[1,1,1],'bold'); $pdf->text($page,500,$y+8,7,'GESAMT',[1,1,1],'bold'); $y-=24; }
@@ -458,7 +458,7 @@ final class PrachtSuite
     {
         $invoice = self::one('SELECT * FROM invoices WHERE id=? AND organization_id=? AND status="issued"',[$id,$orgId]); if (!$invoice) { http_response_code(404); self::messagePage('PDF nicht gefunden','Diese Rechnung steht nicht zur Verfügung.'); return; }
         try {
-            $path=self::storagePath('pdf/' . $orgId . '-' . $id . '.pdf'); $generated = null; clearstatcache(true, $path); $existingSize = is_file($path) ? filesize($path) : false; if ($existingSize === false || $existingSize < 100) $generated = self::generatePdf($orgId,$id); if ($generated === null && !is_file($path)) throw new RuntimeException('PDF konnte nicht erzeugt werden.');
+            $path=self::storagePath('pdf/' . $orgId . '-' . $id . '.pdf'); $generated = self::generatePdf($orgId,$id); if ($generated === '' && !is_file($path)) throw new RuntimeException('PDF konnte nicht erzeugt werden.');
         } catch (Throwable $error) {
             error_log('Pracht Invoice PDF: ' . $error->getMessage()); http_response_code(500); self::messagePage('PDF konnte nicht erstellt werden','Bitte die Rechnung erneut öffnen und den Download noch einmal starten.'); return;
         }
