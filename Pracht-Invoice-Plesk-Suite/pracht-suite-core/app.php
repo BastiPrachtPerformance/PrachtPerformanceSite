@@ -316,7 +316,7 @@ final class PrachtSuite
         if (!preg_match('/^#[0-9a-fA-F]{6}$/', $values['accent_color'])) $values['accent_color'] = '#fa5139';
         if (!in_array($values['template_key'], ['classic','minimal','bold','editorial','mono'], true)) $values['template_key'] = 'classic';
         $logo = self::one('SELECT logo_filename FROM organizations WHERE id=?', [$orgId]);
-        if (!empty($_FILES['logo']['tmp_name'])) $logo['logo_filename'] = self::storeLogo($orgId, $_FILES['logo']);
+        if (isset($_FILES['logo']) && (int) ($_FILES['logo']['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_NO_FILE) $logo['logo_filename'] = self::storeLogo($orgId, $_FILES['logo']);
         self::exec('UPDATE organizations SET name=?,email=?,street=?,postal_code=?,city=?,country=?,tax_number=?,vat_id=?,iban=?,bic=?,invoice_prefix=?,accent_color=?,template_key=?,logo_filename=?,updated_at=NOW() WHERE id=?', [...array_values($values), $logo['logo_filename'], $orgId]);
     }
 
@@ -324,11 +324,13 @@ final class PrachtSuite
     {
         $uploadError = (int) ($file['error'] ?? UPLOAD_ERR_NO_FILE); if ($uploadError !== UPLOAD_ERR_OK) { $messages = [UPLOAD_ERR_INI_SIZE => 'Das Logo ist größer als das Upload-Limit des Hostings.', UPLOAD_ERR_FORM_SIZE => 'Das Logo ist zu groß.', UPLOAD_ERR_PARTIAL => 'Der Upload wurde unterbrochen.', UPLOAD_ERR_NO_FILE => 'Bitte eine Logo-Datei auswählen.', UPLOAD_ERR_NO_TMP_DIR => 'Auf dem Server fehlt der temporäre Upload-Ordner.', UPLOAD_ERR_CANT_WRITE => 'Das Hosting konnte die Upload-Datei nicht speichern.']; throw new RuntimeException($messages[$uploadError] ?? 'Logo-Upload fehlgeschlagen.'); } if (($file['size'] ?? 0) > 3 * 1024 * 1024) throw new RuntimeException('Das Logo darf maximal 3 MB groß sein.');
         $mime = (new finfo(FILEINFO_MIME_TYPE))->file($file['tmp_name']); if (!in_array($mime, ['image/jpeg','image/png'], true)) throw new RuntimeException('Bitte nur PNG oder JPG hochladen.');
-        self::ensureStorage(); $target = self::storagePath('logos/org-' . $orgId . '.jpg');
-        if ($mime === 'image/jpeg') { if (!move_uploaded_file($file['tmp_name'], $target)) throw new RuntimeException('Logo konnte nicht gespeichert werden.'); return basename($target); }
-        if (!function_exists('imagecreatefrompng')) { $pngTarget = self::storagePath('logos/org-' . $orgId . '.png'); if (!move_uploaded_file($file['tmp_name'], $pngTarget)) throw new RuntimeException('Logo konnte nicht gespeichert werden. Bitte die Schreibrechte des Ordners pracht-suite-core/storage/logos prüfen.'); return basename($pngTarget); }
-        $image = imagecreatefrompng($file['tmp_name']); if (!$image) throw new RuntimeException('PNG konnte nicht verarbeitet werden.');
-        $canvas = imagecreatetruecolor(imagesx($image), imagesy($image)); $white = imagecolorallocate($canvas, 255,255,255); imagefill($canvas, 0,0,$white); imagecopy($canvas,$image,0,0,0,0,imagesx($image),imagesy($image)); imagejpeg($canvas, $target, 88); imagedestroy($image); imagedestroy($canvas); return basename($target);
+        self::ensureStorage(); $logoDir = self::storagePath('logos'); if (!is_dir($logoDir) || !is_writable($logoDir)) throw new RuntimeException('Der Ordner pracht-suite-core/storage/logos ist nicht beschreibbar. Bitte auf Plesk für diesen Ordner Schreibrechte aktivieren.');
+        $extension = $mime === 'image/png' ? 'png' : 'jpg'; $originalTarget = self::storagePath('logos/org-' . $orgId . '.' . $extension);
+        $move = static function (string $temporary, string $target): bool { if (@move_uploaded_file($temporary, $target)) return true; if (@copy($temporary, $target)) { @unlink($temporary); return true; } return false; };
+        if ($mime === 'image/jpeg') { if (!$move($file['tmp_name'], $originalTarget)) throw new RuntimeException('Logo konnte nicht gespeichert werden. Prüfe die Schreibrechte von pracht-suite-core/storage/logos.'); return basename($originalTarget); }
+        if (!function_exists('imagecreatefrompng')) { if (!$move($file['tmp_name'], $originalTarget)) throw new RuntimeException('Logo konnte nicht gespeichert werden. Prüfe die Schreibrechte von pracht-suite-core/storage/logos.'); return basename($originalTarget); }
+        $image = @imagecreatefrompng($file['tmp_name']); if (!$image) { if (!$move($file['tmp_name'], $originalTarget)) throw new RuntimeException('PNG konnte nicht verarbeitet und nicht gespeichert werden.'); return basename($originalTarget); }
+        $target = self::storagePath('logos/org-' . $orgId . '.jpg'); $canvas = imagecreatetruecolor(imagesx($image), imagesy($image)); $white = imagecolorallocate($canvas, 255,255,255); imagefill($canvas, 0,0,$white); imagecopy($canvas,$image,0,0,0,0,imagesx($image),imagesy($image)); $converted = @imagejpeg($canvas, $target, 88); imagedestroy($image); imagedestroy($canvas); if ($converted) { @unlink($originalTarget); return basename($target); } if (!$move($file['tmp_name'], $originalTarget)) throw new RuntimeException('Logo konnte nicht gespeichert werden. Prüfe die Schreibrechte von pracht-suite-core/storage/logos.'); return basename($originalTarget);
     }
 
     private static function saveCustomer(int $orgId): void
