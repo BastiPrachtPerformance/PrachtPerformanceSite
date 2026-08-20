@@ -401,7 +401,33 @@ final class PrachtSuite
     private static function generatePdf(int $orgId, int $invoiceId): void
     {
         $invoice = self::one('SELECT * FROM invoices WHERE id=? AND organization_id=? AND status="issued"', [$invoiceId,$orgId]); if (!$invoice) throw new RuntimeException('Rechnung nicht gefunden.');
-        $data = json_decode((string) $invoice['snapshot'], true); if (!is_array($data)) throw new RuntimeException('Rechnungsdaten sind nicht vollständig.');
+        $data = json_decode((string) $invoice['snapshot'], true);
+        if (!is_array($data) || !isset($data['organization'], $data['customer'], $data['items'])) {
+            $organization = self::one('SELECT * FROM organizations WHERE id=?', [$orgId]) ?: [];
+            $customer = self::one('SELECT * FROM customers WHERE id=? AND organization_id=?', [(int) ($invoice['customer_id'] ?? 0), $orgId]) ?: [];
+            $rows = self::all('SELECT title,quantity AS qty,unit_price AS price,tax_rate AS rate,net_total AS itemNet,tax_total AS itemTax FROM invoice_items WHERE invoice_id=? ORDER BY position_no', [$invoiceId]);
+            $data = [
+                'organization' => $organization,
+                'customer' => $customer,
+                'items' => array_map(static fn(array $row): array => [
+                    'title' => (string) ($row['title'] ?? ''),
+                    'qty' => (float) ($row['qty'] ?? 0),
+                    'price' => (float) ($row['price'] ?? 0),
+                    'rate' => (float) ($row['rate'] ?? 19),
+                    'itemNet' => (float) ($row['itemNet'] ?? 0),
+                    'itemTax' => (float) ($row['itemTax'] ?? 0),
+                ], $rows),
+                'issue_date' => (string) $invoice['issue_date'],
+                'service_date' => (string) ($invoice['service_date'] ?? ''),
+                'due_date' => (string) ($invoice['due_date'] ?? ''),
+                'note' => (string) ($invoice['note'] ?? ''),
+                'footer' => (string) ($invoice['footer'] ?? ''),
+                'number' => (string) ($invoice['invoice_number'] ?? 'Rechnung'),
+                'net' => (float) ($invoice['net_total'] ?? 0),
+                'tax' => (float) ($invoice['tax_total'] ?? 0),
+                'gross' => (float) ($invoice['gross_total'] ?? 0),
+            ];
+        }
         $pdf = new PrachtInvoicePdf(); $page = $pdf->newPage(); $accent = self::hexRgb($data['organization']['accent_color'] ?? '#fa5139'); $ink = [0.08,0.08,0.07]; $muted = [0.42,0.40,0.36]; $rule = [0.78,0.76,0.71];
         $logo = self::storagePath('logos/' . ($data['organization']['logo_filename'] ?? ''));
         if (is_file($logo)) $pdf->image($page, $logo, 42, 752, 145, 52); else { $pdf->text($page,42,782,18,(string)($data['organization']['name'] ?? 'Unternehmen'),$ink,'bold'); }
@@ -416,7 +442,7 @@ final class PrachtSuite
         $pdf->text($page,42,530,8,'Leistungsdatum: ' . self::date((string)($data['service_date'] ?: $data['issue_date'])),$muted);
         $y = 493; $pdf->rect($page,42,$y,511,23,$ink,true); $pdf->text($page,50,$y+8,7,'POS',[1,1,1],'bold'); $pdf->text($page,78,$y+8,7,'BESCHREIBUNG',[1,1,1],'bold'); $pdf->text($page,358,$y+8,7,'EINZELPREIS',[1,1,1],'bold'); $pdf->text($page,440,$y+8,7,'MENGE',[1,1,1],'bold'); $pdf->text($page,500,$y+8,7,'GESAMT',[1,1,1],'bold'); $y-=24;
         foreach ($data['items'] as $position => $item) {
-            $lineCount=max(1,(int)ceil(mb_strlen((string)$item['title'])/48)); $height=max(28,$lineCount*12+12);
+            $titleLength = function_exists('mb_strlen') ? mb_strlen((string) $item['title']) : strlen((string) $item['title']); $lineCount=max(1,(int)ceil($titleLength/48)); $height=max(28,$lineCount*12+12);
             if ($y-$height < 190) { $page=$pdf->newPage(); $y=778; $pdf->rect($page,42,$y,511,23,$ink,true); $pdf->text($page,50,$y+8,7,'POS',[1,1,1],'bold'); $pdf->text($page,78,$y+8,7,'BESCHREIBUNG',[1,1,1],'bold'); $pdf->text($page,358,$y+8,7,'EINZELPREIS',[1,1,1],'bold'); $pdf->text($page,440,$y+8,7,'MENGE',[1,1,1],'bold'); $pdf->text($page,500,$y+8,7,'GESAMT',[1,1,1],'bold'); $y-=24; }
             $pdf->text($page,50,$y-12,8,(string)($position+1),$ink); $pdf->wrapped($page,78,$y-12,255,(string)$item['title'],8,$ink); $pdf->text($page,358,$y-12,8,self::pdfMoney($item['price']),$ink); $pdf->text($page,440,$y-12,8,self::decimal($item['qty']),$ink); $pdf->text($page,500,$y-12,8,self::pdfMoney($item['itemNet']),$ink); $pdf->line($page,42,$y-$height,553,$y-$height,$rule); $y-=$height;
         }
@@ -431,7 +457,11 @@ final class PrachtSuite
     private static function downloadPdf(int $orgId, int $id): void
     {
         $invoice = self::one('SELECT * FROM invoices WHERE id=? AND organization_id=? AND status="issued"',[$id,$orgId]); if (!$invoice) { http_response_code(404); self::messagePage('PDF nicht gefunden','Diese Rechnung steht nicht zur Verfügung.'); return; }
-        $path=self::storagePath('pdf/' . $orgId . '-' . $id . '.pdf'); if (!is_file($path)) self::generatePdf($orgId,$id); if (!is_file($path)) throw new RuntimeException('PDF konnte nicht erzeugt werden.');
+        try {
+            $path=self::storagePath('pdf/' . $orgId . '-' . $id . '.pdf'); if (!is_file($path)) self::generatePdf($orgId,$id); if (!is_file($path)) throw new RuntimeException('PDF konnte nicht erzeugt werden.');
+        } catch (Throwable $error) {
+            error_log('Pracht Invoice PDF: ' . $error->getMessage()); http_response_code(500); self::messagePage('PDF konnte nicht erstellt werden','Bitte die Rechnung erneut öffnen und den Download noch einmal starten.'); return;
+        }
         clearstatcache(true, $path); $size = filesize($path); if ($size === false || $size < 100) throw new RuntimeException('Die PDF-Datei ist leer oder konnte nicht gelesen werden.');
         $filename = preg_replace('/[^A-Za-z0-9._-]+/', '-', (string)($invoice['pdf_filename'] ?: 'rechnung.pdf')) ?: 'rechnung.pdf';
         if (session_status() === PHP_SESSION_ACTIVE) session_write_close();
@@ -520,6 +550,51 @@ body{background:radial-gradient(circle at 88% -10%,color-mix(in srgb,var(--accen
 @media(max-width:1080px){.invoice-workspace{grid-template-columns:1fr}.invoice-sidebar{position:static}.issue-card{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}.issue-card>.eyebrow,.issue-card>.sidebar-rule{grid-column:1/-1}.issue-card .totals{margin:0}.issue-actions{align-self:end}}
 @media(max-width:700px){.portal-header,.control-header{padding:10px 14px;min-height:68px}.control-status{display:none}.control-brand>span{width:34px;height:34px;border-radius:9px}.portal-header nav{order:3;width:100%;justify-content:flex-start;overflow:auto;border-radius:12px}.portal-header nav a{padding:8px 10px;white-space:nowrap}.portal-brand>span{width:34px;height:34px;border-radius:9px}.user-menu{padding:8px}.hero,.invoice-hero,.page-head{padding-top:42px}.hero:before,.invoice-hero:before,.page-head:before{display:none}.head-meta{margin:16px 0 0;max-width:260px}.invoice-page-head .ghost{margin-top:16px}.invoice-workspace{gap:14px}.issue-card{display:block;padding:18px;border-radius:12px}.issue-card .form-grid{margin-top:14px}.issue-card .totals{margin:12px 0 18px}.card{border-radius:12px}.position-row{grid-template-columns:1fr 1fr 54px 27px;gap:7px}.position-row input:first-child{grid-column:1/-1}.position-row input:nth-child(2),.position-row input:nth-child(3){grid-column:auto}.position-row output{display:none}.customer-picker{padding:11px}.invoice-texts textarea{min-height:76px}}
 @media(max-width:700px){.login{display:block;min-height:100svh;padding:16px;background:radial-gradient(circle at 10% 0%,#fa513940,transparent 18rem),radial-gradient(circle at 100% 75%,#766aff30,transparent 18rem),#151515}.login section{width:100%;max-width:520px;margin:0 auto;padding:30px 20px 24px;border-radius:22px}.login section:before{display:none}.login h1{margin:13px 0 18px;font-size:clamp(44px,14vw,66px);line-height:.82;letter-spacing:-.09em}.login h1 em{display:block;margin-top:4px;font-size:.82em;line-height:.86}.login p{font-size:14px;line-height:1.5}.login .form{gap:11px;margin-top:24px}.login .form input{min-height:50px;padding:12px}.login .button{min-height:52px}.login small{font-size:11px;line-height:1.45}.customer-layout{grid-template-columns:1fr}.customer-layout>.table-card{margin:0}}
+@media(max-width:700px){
+  body.invoice{overflow-x:hidden}
+  body.invoice .portal-header{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;padding:12px 14px;min-height:0}
+  body.invoice .portal-brand{min-width:0}
+  body.invoice .portal-brand>span{width:38px;height:38px;flex:0 0 auto}
+  body.invoice .portal-brand b{font-size:12px;line-height:1.1}
+  body.invoice .portal-brand small{font-size:7px}
+  body.invoice .user-menu{justify-self:end;align-self:center;padding:0;background:transparent;color:var(--ink)}
+  body.invoice .user-menu summary{padding:10px 13px;border:1px solid #17161420;border-radius:999px;background:#fff9;font-size:12px}
+  body.invoice .user-menu[open]{padding:0;background:transparent;color:var(--ink)}
+  body.invoice .portal-header .user-menu a{position:absolute;right:0;top:calc(100% + 8px);z-index:30;min-width:150px;margin:0;padding:10px 12px;background:var(--ink);color:var(--paper);font-size:10px}
+  body.invoice .portal-header .user-menu a+a{top:calc(100% + 43px)}
+  body.invoice .portal-header nav{grid-column:1/-1;order:initial;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px;width:100%;padding:4px;border-radius:14px;overflow:visible;background:#ffffffa8}
+  body.invoice .portal-header nav a{min-width:0;padding:10px 5px;text-align:center;white-space:normal;font-size:10px;line-height:1.15}
+  body.invoice .invoice-hero,body.invoice .page-head{display:block;padding:32px 18px 22px}
+  body.invoice .invoice-hero h1,body.invoice .page-head h1{margin:11px 0 17px;font-size:clamp(53px,16vw,76px);line-height:.8;letter-spacing:-.09em}
+  body.invoice .invoice-hero p{max-width:32rem;font-size:14px;line-height:1.5}
+  body.invoice .invoice-hero .button,body.invoice .page-head .button{display:flex;width:100%;margin-top:18px;min-height:50px}
+  body.invoice .page-head .ghost{display:flex;width:100%;justify-content:center;margin-top:10px}
+  body.invoice .metrics{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;padding:0 18px;margin-bottom:14px}
+  body.invoice .metrics article{min-height:102px;padding:12px;border:1px solid #17161424;border-left:1px solid #17161424;border-radius:10px}
+  body.invoice .metrics article:first-child{border-left:1px solid #17161424}
+  body.invoice .metrics strong{margin:18px 0 5px;font-size:clamp(25px,8vw,38px)}
+  body.invoice .metrics span,body.invoice .metrics small{font-size:9px}
+  body.invoice .grid{gap:12px;margin:14px auto;padding:0 18px}
+  body.invoice .card{padding:16px;border-radius:13px}
+  body.invoice .table-card{margin:14px 14px 0;border-radius:14px}
+  body.invoice .table-card .card-head{margin:0;padding:16px}
+  body.invoice .table-card .table{overflow:visible}
+  body.invoice .table-card table{display:block;width:100%}
+  body.invoice .table-card thead{display:none}
+  body.invoice .table-card tbody{display:grid;gap:9px;padding:10px}
+  body.invoice .table-card tbody tr{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:7px 10px;padding:13px;border:1px solid #17161418;border-radius:11px;background:#fff}
+  body.invoice .table-card tbody td{display:flex;align-items:center;min-width:0;padding:0;border:0;white-space:normal;font-size:11px;overflow-wrap:anywhere}
+  body.invoice .table-card tbody td:nth-child(1){grid-column:1/-1}
+  body.invoice .table-card tbody td:nth-child(1) b{font-size:14px}
+  body.invoice .table-card tbody td:nth-child(2){grid-column:1/-1;color:#514e48}
+  body.invoice .table-card tbody td:nth-child(3){grid-column:1;color:#716d65}
+  body.invoice .table-card tbody td:nth-child(4),body.invoice .table-card tbody td:nth-child(5){justify-content:flex-end;font-weight:700}
+  body.invoice .table-card tbody td:nth-child(6){grid-column:1}
+  body.invoice .table-card tbody td:last-child{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:10px;padding-top:9px;border-top:1px solid #17161415}
+  body.invoice .table-card tbody td:last-child form{margin:0}
+  body.invoice .table-card tbody td.empty{display:block;grid-column:1/-1;padding:25px!important}
+  body.invoice .invoice-actions{display:flex;flex-wrap:wrap;gap:10px}
+}
 CSS; }
 }
 
