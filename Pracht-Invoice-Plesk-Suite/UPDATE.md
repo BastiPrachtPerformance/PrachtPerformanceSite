@@ -12,6 +12,8 @@ Dieses Update überarbeitet Pracht Control, das Invoice Portal und die erzeugten
 - ausgestellte Rechnungen in den Papierkorb verschieben, innerhalb von 60 Tagen wiederherstellen oder endgültig löschen
 - automatische Bereinigung von Papierkorb-Rechnungen nach 60 Tagen inklusive PDF-Datei
 - mehrere echte PDF-Aufbauten: Classic, Minimal, Bold, Editorial, Mono und Business
+- nächste Rechnungsnummer und Präfix im Profil frei einstellbar (z. B. RE0014, danach RE0015)
+- Leistungsdatum optional: kein Datum, einzelnes Datum oder Zeitraum von/bis
 - Pracht Control erweitert um Kundenwebsites, Status-Schaltung, Traffic-Kennzahlen, Aufgaben und Aktivitätsprotokoll
 
 ## Auf Plesk einspielen
@@ -23,6 +25,8 @@ Dieses Update überarbeitet Pracht Control, das Invoice Portal und die erzeugten
 
 Ein erneuter Aufruf von `install.php` ist nicht nötig. Die vorhandenen Mandanten, Nutzer, Kunden und Rechnungen bleiben erhalten.
 
-Beim ersten Aufruf von Control oder Invoice ergänzt das Update die beiden Papierkorb-Felder automatisch in der vorhandenen `invoices`-Tabelle. Dafür ist keine manuelle SQL-Eingabe erforderlich.
+Beim ersten Aufruf von Control oder Invoice ergänzt das Update die Papierkorb-Felder und das optionale Leistungsdatum-bis-Feld automatisch in der vorhandenen `invoices`-Tabelle. Dafür ist keine manuelle SQL-Eingabe erforderlich.
+
+Die Rechnungsnummer stellst du in **Vorlage & Profil → Rechnungsstart** ein. Für `RE0014` trägst du als Präfix `RE` und als nächste Rechnungsnummer `14` ein. Bereits ausgestellte Belege werden nicht rückwirkend umnummeriert; wenn die beiden bisherigen Belege ersetzt werden sollen, verschiebst du sie in den Papierkorb und erstellst sie anschließend neu.
 
 Final ausgestellte Rechnungen können in der Dokumentenliste über **In Papierkorb** verschoben werden. Im neuen Bereich **Papierkorb** bleiben sie 60 Tage erhalten. Dort können sie wiederhergestellt oder sofort endgültig gelöscht werden; nach Ablauf der 60 Tage entfernt das Portal Datensatz und zugehörige PDF automatisch.
