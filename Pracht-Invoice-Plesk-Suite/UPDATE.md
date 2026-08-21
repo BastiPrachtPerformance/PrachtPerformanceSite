@@ -11,6 +11,7 @@ Dieses Update überarbeitet Pracht Control, das Invoice Portal und die erzeugten
 - Entwürfe bearbeiten und löschen; für ausgestellte Rechnungen eine bearbeitbare Kopie erstellen
 - ausgestellte Rechnungen in den Papierkorb verschieben, innerhalb von 60 Tagen wiederherstellen oder endgültig löschen
 - automatische Bereinigung von Papierkorb-Rechnungen nach 60 Tagen inklusive PDF-Datei
+- mehrere echte PDF-Aufbauten: Classic, Minimal, Bold, Editorial, Mono und Business
 - Pracht Control erweitert um Kundenwebsites, Status-Schaltung, Traffic-Kennzahlen, Aufgaben und Aktivitätsprotokoll
 
 ## Auf Plesk einspielen
